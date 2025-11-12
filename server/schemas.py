@@ -61,9 +61,10 @@ class Book(BookBase):
 class LoanBase(BaseModel):
     book_id: int
     due_date: datetime
+    
 
 class LoanCreate(LoanBase):
-    pass
+    loan_date: datetime
 
 class Loan(LoanBase):
     id: int
@@ -82,6 +83,7 @@ class ReservationBase(BaseModel):
 
 class ReservationCreate(ReservationBase):
     expiry_date: datetime
+    user_id: Optional[int] = None
 
 class Reservation(ReservationBase):
     id: int

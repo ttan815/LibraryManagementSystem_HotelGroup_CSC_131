@@ -33,6 +33,14 @@ def create_reservation(
         expiry_date=reservation.expiry_date,
         reservation_type=reservation.reservation_type
     )
+    if(reservation.user_id != None):
+        db_reservation = models.Reservation(
+            user_id=reservation.user_id,
+            book_id=reservation.book_id,
+            expiry_date=reservation.expiry_date,
+            reservation_type=reservation.reservation_type
+        )
+        
 
     db.add(db_reservation)
     db.commit()
@@ -49,9 +57,10 @@ def get_reservations(
     if current_user.role in [models.UserRole.ADMIN, models.UserRole.LIBRARIAN]:
         reservations = db.query(models.Reservation).offset(skip).limit(limit).all()
     else:
-        reservations = db.query(models.Reservation).filter(
-            models.Reservation.user_id == current_user.id
-        ).offset(skip).limit(limit).all()
+        reservations = db.query(models.Reservation).offset(skip).limit(limit).all()
+        # reservations = db.query(models.Reservation).filter(
+        #     models.Reservation.user_id == current_user.id
+        # ).offset(skip).limit(limit).all()
     return reservations
 
 @router.put("/{reservation_id}/cancel")

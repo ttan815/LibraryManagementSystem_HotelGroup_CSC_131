@@ -34,7 +34,8 @@ def create_loan(
     db_loan = models.Loan(
         user_id=current_user.id,
         book_id=loan.book_id,
-        due_date=loan.due_date
+        due_date=loan.due_date,
+        loan_date=loan.loan_date
     )
 
     book.available_copies -= 1
@@ -44,13 +45,18 @@ def create_loan(
     db.refresh(db_loan)
     return db_loan
 
-@router.put("/{loan_id}/return")
+@router.put("/{loan_id}/{return_date}/{bookid}/{overdue_fee}/{cancel}/return")
 def return_loan(
     loan_id: int,
+    return_date: str,
+    bookid: int,
+    cancel: bool,
+    overdue_fee: float | None = None,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_active_user)
 ):
     loan = db.query(models.Loan).filter(models.Loan.id == loan_id).first()
+
     if not loan:
         raise HTTPException(status_code=404, detail="Loan not found")
 
@@ -60,14 +66,25 @@ def return_loan(
     if loan.status == models.LoanStatus.RETURNED:
         raise HTTPException(status_code=400, detail="Loan already returned")
 
-    loan.return_date = datetime.utcnow()
+    if(cancel == True):
+        book = db.query(models.Book).filter(models.Book.id == loan.book_id).first()
+        book.available_copies += 1
+        db.delete(loan)
+        db.commit()
+        return {"message": "Loan cancelled and deleted successfully"}
+
+    # loan.return_date = datetime.utcnow()
+    loan.return_date = datetime.fromisoformat(return_date.replace("Z", "+00:00"))
+
     loan.status = models.LoanStatus.RETURNED
+    loan.book_id = bookid
+    loan.overdue_fee = overdue_fee
 
     book = db.query(models.Book).filter(models.Book.id == loan.book_id).first()
     book.available_copies += 1
 
-    if loan.return_date > loan.due_date:
-        days_overdue = (loan.return_date - loan.due_date).days
+    if loan.return_date.replace(tzinfo=None) > loan.due_date.replace(tzinfo=None):
+        days_overdue = (loan.return_date.replace(tzinfo=None) - loan.due_date.replace(tzinfo=None)).days
         loan.overdue_fee = days_overdue * 1.0
 
     db.commit()
