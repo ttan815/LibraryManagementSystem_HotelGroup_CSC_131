@@ -1,0 +1,68 @@
+.registerAndLoginForm {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;          
+  width: 100%;                
+  padding: 2rem;                
+}
+
+/* Inner card for the form itself */
+.registerAndLoginForm form {
+  background-color: #f7f7f7;     
+  color: white;
+  width: 100%;                   
+  max-width: 500px;             
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(56, 56, 56, 0.3);
+  margin: 25px;
+}
+
+.column{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+#addBookTitle{
+    text-align: center;
+    color: black;
+}
+
+.form-control{
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  background-color: #e7e7e7; 
+  color: black;             
+  font-size: 1.2rem;
+  outline: none;
+}
+.inputName{
+    font-size: 1.2rem;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    color: black;
+}
+
+.submitButton{
+    margin-top: 15px;
+    width: 150px;
+}
+.switchFormContainer{
+    width: 100%;
+    display: flex;
+    justify-content: first baseline;
+}
+.switchRegisterAndLoginForm{
+    color: rgb(85, 85, 203);
+    width: 300px;
+    font-size: 15px;
+    border: none;
+    background: none;
+    padding: 25px;
+    padding-left: 5px;
+    text-align: left;
+    font-weight: bold;
+}

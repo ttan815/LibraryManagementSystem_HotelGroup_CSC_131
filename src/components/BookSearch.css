@@ -1,0 +1,69 @@
+#searchBookInput{
+    width: 250px;
+    height: 40px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+#searchBookButton{
+    align-self: center;
+    width: 150px;
+    height: 40px;
+    font-size: 15px;
+    margin-left: 15px;
+}
+#searchBar{
+    display: flex;
+    justify-content: center;
+}
+#searchContent{
+  display: flex;
+  flex-wrap: wrap;  
+  flex-direction: column;         
+  justify-content: center;    
+  gap: 20px;                  
+  margin-top: 30px;
+  padding: 10px;
+}
+
+#searchInput{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+}
+#searchInput h1{
+    padding: 15px;
+}
+
+#svrContent{
+    display: flex;
+    justify-content: space-around;
+}
+.bookContainer{
+    display: flex;
+    justify-content: center;
+    background-color: rgb(233, 213, 186);
+    padding: 15px;
+    border-radius: 15px;
+}
+
+.bookInfo{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 50%;
+    height: 82px;
+}
+.bookOptions{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    justify-content: center;
+    align-items: center;
+}
+.bookOptions button{
+height: 50px;
+margin-left: 15px;
+margin-right: 15px;
+}
