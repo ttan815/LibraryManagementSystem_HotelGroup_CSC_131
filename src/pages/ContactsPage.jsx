@@ -4,6 +4,7 @@ const ContactsPage = () => {
 
   return (
     <div className="registerAndLoginForm">
+        {/*  Uses the FormSpree API that will load all the info from the form into an email sent to a Google Groups email that will then distribute that Contact Form info to all memebrs of the Hotel Group */}
         <form action="https://formspree.io/f/mblqjwkz" method="POST">
           <h1 id="addBookTitle">Contact Us</h1>
           <div className="column">

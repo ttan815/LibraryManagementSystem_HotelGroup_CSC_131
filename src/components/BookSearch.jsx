@@ -1,72 +1,28 @@
 import React, { useContext, useState, useEffect } from 'react'; 
 import './BookSearch.css'
-import { AppContext } from '../context/AppContext';
 
 function BookSearch() {
-  // const { books } = useContext(AppContext);
+/**
+ * BookSearch.jsx
+ * -----------------------------------------------------------
+ * Component: BookSearch
+ * Author: Tony Tan
+ * Course: CSC-131-05 Software Engineering
+ * Project: Library Management System
+ *
+ */
+  const [inputValue, setInputValue] = useState(''); // User's input as well as a setter function to update inputValue
+  const [query, setQuery] = useState('');  // What will be used as the input to search for as well as a setter function update query
+  const [bookLibrary, setBooks] = useState([]); // The books from the database stored in an array (bookLibrary) and a setter function to define books in the array
+  const [wishlists, setWishlists] = useState([]); // Books wishlisted by the user stored in wishLists and a setter function to set books for wishlist in the array
+  const [currentUser, setCurrentUser] = useState(null); // gets the user for the website currently as currentUser, with setCurrentUuser to initialize currentUser as whoeerver is using it (by their ID)
 
-  const [inputValue, setInputValue] = useState(''); 
-  const [query, setQuery] = useState(''); 
-  const [bookLibrary, setBooks] = useState([]);
-  const [reservations, setReservations] = useState([]);
-  const [wishlists, setWishlists] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
-
-  const handleSearch = () => {
+  const handleSearch = () => { // Function for search button, set's the users input for querying in the database
     setQuery(inputValue);
   };
 
-  const reserveBook = async (bookID) => {
-    const token = localStorage.getItem("token");
-    const body = {
-      book_id: bookID,
-      reservation_type: "loan",
-      expiry_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString() // Default the expiration date to 7 days extra
-    };
 
-    const res = await fetch("http://localhost:8000/api/reservations/", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(body),
-    });
-    if (res.ok) {
-      const updatedRes = await fetch("http://localhost:8000/api/reservations/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const updatedData = await updatedRes.json();
-      console.log("Updated reservations after unreserve:", updatedData);
-
-      setReservations(updatedData);
-    } else {
-      console.error(`Failed to reserve: ${res.status}`);
-    }
-  };
-
-  const unreserveBook = async (reservationID) => {
-    const token = localStorage.getItem("token");
-    const res = await fetch(`http://localhost:8000/api/reservations/${reservationID}/cancel`, {
-      method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if(res.ok){
-      console.log("Successfuly unreserved the book.");
-      const updatedRes = await fetch("http://localhost:8000/api/reservations/", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const updatedData = await updatedRes.json();
-      setReservations(updatedData);
-    }
-    else{
-      console.log("Unsuccessful in unreserving the book.");
-    }
-  };
-
-  const addToWishlist = async (bookID) => {
+  const addToWishlist = async (bookID) => { // Function that will add the book's ID to the wishlist database once the user clicks on "Wishlist Book"
     const token = localStorage.getItem("token");
     const body = {
       book_id: bookID,
@@ -79,7 +35,7 @@ function BookSearch() {
       },
       body: JSON.stringify(body),
     });
-    if(res.ok){
+    if(res.ok){ // If the call to POST the bookID as a wishlisted book is successful, update the current wishlist and update buttons (Wishlist book --> Remove Book from Wishlist)
       const updatedWishlist = await fetch("http://localhost:8000/api/users/me/wishlist", {
       method: "GET",
       headers: {
@@ -95,7 +51,7 @@ function BookSearch() {
     }
   };
 
-  const removeFromWishList = async (bookID) => {
+  const removeFromWishList = async (bookID) => { // Function that will remove the book associated with the bookID from the wishlist database once the user clicks on "Remove Book from Wishlist"
     const token = localStorage.getItem("token");
     const res = await fetch(`http://localhost:8000/api/users/me/wishlist/${bookID}`,{
       method: "DELETE",
@@ -103,7 +59,7 @@ function BookSearch() {
         Authorization: `Bearer ${token}`,
       }
     })
-    if(res.ok){
+    if(res.ok){ // If the call to DELETE the wishlisted book associated with the bookID is successful, update the current wishlist and update buttons (Remove Book from Wishlist --> Wishlist Book)
       alert("Successfully removed from your wishlist.");
 
       const updatedWishlist = await fetch("http://localhost:8000/api/users/me/wishlist", {
@@ -122,13 +78,13 @@ function BookSearch() {
     }
   };
 
-  async function fetchBooks() {
+  async function fetchBooks() { // function to retrieves all books from the database and return as a JSON
     const res = await fetch("http://localhost:8000/api/books/");
     return await res.json();
   }
 
-  useEffect(()=>{
-    const loadUsersReservationsAndWishlists = async () =>{
+  useEffect(()=>{ // calls all functions within once every time this component is loaded up
+    const loadUsersReservationsAndWishlists = async () =>{ // Attempts to sets the variables of currentUser and wishlists
       try{
         const token = localStorage.getItem("token");
         const userRes = await fetch("http://localhost:8000/api/users/me", {
@@ -138,14 +94,6 @@ function BookSearch() {
         });
         const user = await userRes.json();
         setCurrentUser(user.id)
-        console.log("Current User: " + user.id);
-        const reservationsRes = await fetch("http://localhost:8000/api/reservations/", {
-          headers:{
-            Authorization: `Bearer ${token}`,
-          }
-        });
-        const reservationsFound = await reservationsRes.json()
-        setReservations(reservationsFound);     
         const wishlistRes = await fetch("http://localhost:8000/api/users/me/wishlist",{
           headers:{
             Authorization: `Bearer ${token}`,
@@ -155,12 +103,9 @@ function BookSearch() {
         setWishlists(wishlistsFound);
       }
       catch(error){
-        console.error("Error fetching user/reservations: ", error);
+        console.error("Error fetching user/wishlists ", error);
       }
     }
-    loadUsersReservationsAndWishlists();
-  }, [])
-  useEffect(() => {
     const loadBooks = async () => {
       try {
         const data = await fetchBooks();
@@ -170,9 +115,11 @@ function BookSearch() {
         console.error("Error fetching books:", error);
       }
     };
+    loadUsersReservationsAndWishlists();
     loadBooks();
-  }, []);
-  if (!currentUser) {
+  }, [])
+
+  if (!currentUser) { // For wishlist functionality, user must be logged in, ternary operation that shows "Please log in to view and reserve book if currentUser isn't defined"
     return <h2 style={{ textAlign: "center", marginTop: "50px" }}>Please log in to view and reserve books.</h2>;
   }
   return (
@@ -197,57 +144,30 @@ function BookSearch() {
       </div>
 
 <div id="searchContent">
-  {bookLibrary && bookLibrary.map(book => 
-    book.title.toLowerCase().includes(query.toLowerCase()) ? (
+  {bookLibrary && bookLibrary.map(book => //
+    book.title.toLowerCase().includes(query.toLowerCase()) ? ( // .map goes through the array of JSON objects and filters the books shown to display only books that contain data stated in query
       <div className='bookContainer' key={book.id}>
         <div className='bookInfo'>
           <h3>Title: {book.title}</h3>
           <p>Author: {book.author}</p>
           <p>ISBN: {book.isbn}</p>
         </div>
-
         <div className='bookOptions'>
-          {(() => {
-            const existingReservation = reservations.find(r => r.book_id === book.id && r.status.trim().toUpperCase() !== "CANCELLED");
-            if (!existingReservation) {
-              return (
-                <button className='btn btn-success' onClick={() => reserveBook(book.id)}>
-                  Reserve Book
-                </button>
-              );
-            } else if (existingReservation.user_id === currentUser) {
-
-              return (
-                <button className='btn btn-danger' onClick={() => unreserveBook(existingReservation.id)}>
-                  Unreserve Book
-                </button>
-              );
-            } else {
-
-              return (
-                <button className='btn btn-secondary' disabled>
-                  Reserved by Another User
-                </button>
-              );
-            }
-          })()}
-        </div>
-        <div className='bookOptions'>
-          {(() => {
-            const existingWishlist = wishlists.find(r => r.book_id === book.id);
-            if (!existingWishlist) {
-              return (
-                <button className='btn btn-success' onClick={() => addToWishlist(book.id)}>
+          {(()=>{ // Logical condition to check if the user had wishlisted the book in order to prevent repeated wishlists on the same book.
+            const alreadyWishlisted = wishlists.find(wishListObject => wishListObject.book_id === book.id);
+            if(!alreadyWishlisted){
+              return(
+                <button onClick={()=>addToWishlist(book.id)}>
                   Wishlist Book
                 </button>
-              );
-            } else if (existingWishlist.user_id === currentUser) {
-
-              return (
-                <button className='btn btn-danger' onClick={() => removeFromWishList(existingWishlist.book_id)}>
+              )
+            }
+            else{
+              return(
+                <button onClick={()=>removeFromWishList((alreadyWishlisted.book_id))}>
                   Remove Book from Wishlist
                 </button>
-              );
+              )
             }
           })()}
         </div>

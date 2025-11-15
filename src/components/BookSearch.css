@@ -1,3 +1,4 @@
+/* Styling for the search bar, search button, and the area that will hold the books */
 #searchBookInput{
     width: 250px;
     height: 40px;
@@ -35,10 +36,7 @@
     padding: 15px;
 }
 
-#svrContent{
-    display: flex;
-    justify-content: space-around;
-}
+/* Styling to format how the books appear in the search */
 .bookContainer{
     display: flex;
     justify-content: center;
@@ -47,6 +45,7 @@
     border-radius: 15px;
 }
 
+/* Styling pertaining to the books arrangement of info and wishlist button */
 .bookInfo{
     display: flex;
     flex-direction: column;

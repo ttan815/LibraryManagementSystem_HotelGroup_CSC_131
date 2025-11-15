@@ -1,24 +1,65 @@
 import "./LoansList.css";
 import React, { useContext, useState, useEffect } from 'react'; 
 
-// for the reservation and loan system, if they want to reserve for in-person reading, make a function that'll delete the reservation and make a new one with the same details, but have it's reservation type to in-person reading, if it's a loan, go ahead and just delete the reservation and create it as a loan
 function LoansList() {
-  const [loans, setLoans] = useState([]);
-  const [reservations, setReservations] = useState([]);
-  const [users, setUsers] = useState({});
-  const [books, setBooks] = useState({});
+  const [loans, setLoans] = useState([]); // Default empty array to prevent errors in .map while waiting for data to be fetched, setLoans is used to set the data within loans of type array
+  const [reservations, setReservations] = useState([]); // Default empty array to prevent errors in .map while waiting for data to be fetched, setReservations is used to set the data within loans of type array
   const [overdueloans, setOverdueLoans] = useState([]);
+  // Default empty array to prevent errors in .map while waiting for data to be fetched, setOverdueLoans is used to set the data within loans of type array
+  const [users, setUsers] = useState({});  // Users is a object, also known as a hashmap, that holds the user ID as the key which allows fast indexing into that info for that key. setUsers sets the key-value pairs for users.
+    // Here is what a sample dataset for what users looks like.
+    //   users = {
+    //   0: {
+    //     email: "user@example.com",
+    //     username: "string",
+    //     full_name: "string",
+    //     id: 0,
+    //     role: "user",
+    //     is_active: true,
+    //     membership_dues: 0,
+    //     created_at: "2025-11-13T23:25:41.844Z"
+    //   }
+    // }
+  const [books, setBooks] = useState({}); // Books is an object, also known as a hashmap/dictionary, that holds the book ID as the key which allows fast indexing into that info for that key. setBooks sets the key-value pairs for books.
+    // Here is what a sample dataset for what books looks like.
+    // books = {
+    //   0: {
+    //     title: "string",
+    //     author: "string",
+    //     isbn: "string",
+    //     publisher: "string",
+    //     publication_year: 0,
+    //     category: "string",
+    //     description: "string",
+    //     id: 0,
+    //     total_copies: 0,
+    //     available_copies: 0,
+    //     created_at: "2025-11-13T23:25:20.458Z"
+    //   }
+    // }
 
-  const createReservation = async () =>{
-    const token = localStorage.getItem("token");
-    const elements = document.querySelectorAll("[data-id='addReservationID']");
-    const dataValues = {};
+  const createReservation = async () =>{ // Function that will take inputs from those with data-id='addReservationID' in them, and validation logic for the book, user, and reservation type to make sure the input is allowed before creating the reservation.
+    const token = localStorage.getItem("token"); // Token that will have the user's information, more importantly, their role which dictate if these GET, POST, PUT, DELETE methods will go through.
+    const elements = document.querySelectorAll("[data-id='addReservationID']"); // gets all inputs from those input elements with data-id='addReservationID' as an array.
+    const dataValues = {}; // dataValues is an object, also known as a hashmap/dictionary that will hold key-value pairs
     for(const elementInput of elements){
         dataValues[elementInput.dataset.field] = elementInput.value;
     }
-    let found = false;
-    let selectedBookID = undefined;
-    for (const key in books) {
+    // Here is a sample dataset for what dataValues looks like
+    // {
+    //   "username": "tony",
+    //   "book_titles": "Hunger Games",
+    //   "author": "Bob",
+    //   "isbn": "1234567890",
+    //   "reservation_date": "2025-11-13",
+    //   "expiration_date_and_due_date": "2025-11-27",
+    //   "reservation_type": "loan"
+    // }
+
+    let found = false; // validator to ensure the book wanting to be reserved exists in the database of books, which is held in books.
+    let selectedBookID = undefined; // Holds the book ID if it has been found
+
+    for (const key in books) { // iterates through each book key-value pair and compares the info the info inputted by the user to validate if it exists before breaking out, or else found stays false and the user is informed the book inputted isn't valid.
         const book = books[key];
         if (book.title.trim().toLowerCase() === dataValues["book_titles"].trim().toLowerCase() && book.author.trim().toLowerCase() === dataValues["author"].trim().toLowerCase() && book.isbn.trim().toLowerCase() === dataValues["isbn"].trim().toLowerCase()) {
             selectedBookID = book.id;
@@ -26,8 +67,8 @@ function LoansList() {
             break;
         }
     }
-    let userIDForReservation = undefined
-    for (const id in users) {
+    let userIDForReservation = undefined // Holds the user ID if it has been found
+    for (const id in users) { // iterates through each book key-value pair and compares the info the info inputted by the user to validate if that user exists, or else it'll stay false and the user is informed the inputted username does not exist.
         if(users[id].username == dataValues["username"].trim()){
             userIDForReservation = id;
         }
@@ -40,7 +81,7 @@ function LoansList() {
         alert("No book found matching your specifications (title or author or isbn). " + dataValues["book_titles"]);
         return;
     }
-    if(dataValues["reservation_type"].trim().toLowerCase() != "loan" && dataValues["reservation_type"].trim().toLowerCase() != "in-person reading"){
+    if(dataValues["reservation_type"].trim().toLowerCase() != "loan" && dataValues["reservation_type"].trim().toLowerCase() != "in-person reading"){  // validates if the selected reservation type is "loan" or "in-person reading" or else it'll stop the process and inform the user of the error in input.
         console.log("Compared: "+ dataValues["reservation_type"])
         alert("Reservation type can only be 'loan' or 'in-person reading'.");
         return;
@@ -69,7 +110,7 @@ function LoansList() {
 
   }
 
-  const loadLoans = async () => {
+  const loadLoans = async () => { // Function that will load in the loans currently in the database
     const token = localStorage.getItem("token");
     const res = await fetch("http://localhost:8000/api/loans/", {
       method: "GET",
@@ -84,7 +125,7 @@ function LoansList() {
         setLoans(allLoans);
     }
   };
-  const loadReservations = async () =>{
+  const loadReservations = async () =>{ // Function that will load the reservations currently in the database
     const token = localStorage.getItem("token");
     const res = await fetch("http://localhost:8000/api/reservations/",{
       method: "GET",
@@ -99,7 +140,7 @@ function LoansList() {
         setReservations(allReservations);
     }
   }
-  const loadUsers = async () =>{
+  const loadUsers = async () =>{ // Function that will load the users, but makes it as a hashmap, which allows ID's to be indexed easily later to get the user info associated with it.
     const token = localStorage.getItem("token");
     const res = await fetch("http://localhost:8000/api/admin/users",{
       method: "GET",
@@ -119,7 +160,7 @@ function LoansList() {
         setUsers(allUserHashMap);
     }
   }
- const loadBooks = async () =>{
+ const loadBooks = async () =>{ // Function to load the books, but makes it as a hashmap, which allows the book IDs to be indexed easily later to get the book info associated with it.
     const res = await fetch("http://localhost:8000/api/books/",{
       method: "GET",
       headers: {
@@ -137,7 +178,7 @@ function LoansList() {
         setBooks(allBooksHashMap);
     }
   }
-  const loadOverdueLoans = async () =>{
+  const loadOverdueLoans = async () =>{ // Function to load the over due loans (loans with an overdue_fee value > 0.0)
     const token = localStorage.getItem("token");
     const res = await fetch("http://localhost:8000/api/admin/loans/overdue",{
       method: "GET",
@@ -151,22 +192,34 @@ function LoansList() {
         setOverdueLoans(allOverdueLoans);
     }
   }
-  useEffect(()=>{
+  useEffect(()=>{ // useEffect, which will automatically load all the data for books, users, loans, reservations, and overdueloans on refresh/loading of the page
   loadBooks();
   loadUsers();
   loadLoans();
   loadReservations();
   loadOverdueLoans();
   },[])
-  const approveReservation = async (reservationID, book_id) =>{
-    const token = localStorage.getItem("token");
-    const elements = document.querySelectorAll(`[data-id="${reservationID}"]`);
-    const dataValues = {};
+  const approveReservation = async (reservationID, book_id) =>{ // Function that will take the inputs from the field for the reservation and passed in parameters to approve the reervation
+    const token = localStorage.getItem("token"); // token that is used to authorize usage to admins only
+    const elements = document.querySelectorAll(`[data-id="${reservationID}"]`); // gets all the input values that share the data-id of the reservationID (tagged with the reservation row)
+    const dataValues = {}; // gets all the values as a object, also known as a hashmap/dictionary that will allow easy access to the values from the reservation input fields by key-value pairs
+
     for(const elementInput of elements){
         dataValues[elementInput.dataset.field] = elementInput.value;
     }
+    //Example data of dataValues after making the key-value pairs
+    // Example of the dataValues:
+    // {
+    //   username: "tony",
+    //   book_titles: "Hunger Games",
+    //   author: "Bob",
+    //   isbn: "123",
+    //   reservation_date: "2025-11-13",
+    //   expiration_date_and_due_date: "2025-11-27",
+    //   reservation_type: "loan"
+    // }
     let found = false;
-    for (const key in books) {
+    for (const key in books) { // Validator to see if the book exists before allowing users to add the modification to the reservation
         const book = books[key];
         if (book.title.trim().toLowerCase() === dataValues["book_titles"].trim().toLowerCase() && book.author.trim().toLowerCase() === dataValues["author"].trim().toLowerCase() && book.isbn.trim().toLowerCase() === dataValues["isbn"].trim().toLowerCase()) {
             book_id = book.id;
@@ -178,7 +231,7 @@ function LoansList() {
         alert("No book found matching your specifications (title or author or isbn). " + dataValues["book_titles"]);
         return;
     }
-    const body = {
+    const body = { // Construct the book that will be sent as a POST with the reservation
         "book_id" : book_id,
         "due_date" : new Date(dataValues["expiration_date_and_due_date"]).toISOString(),
         "loan_date" : new Date(dataValues["reservation_date"]).toISOString(), 
@@ -200,6 +253,7 @@ function LoansList() {
             alert("Unable to approve, make sure all inputs are valid and book isn't already in-use.")
             return;
         }
+        // Once the reservation is approved to be a loan, we cancel the reservation.
         const cancelReservationRes = await fetch(`http://localhost:8000/api/reservations/${reservationID}/cancel`,
         {
             method: "PUT",
@@ -217,7 +271,7 @@ function LoansList() {
     }
   }
 
-  const cancelReservation = async (reservation_id) =>{
+  const cancelReservation = async (reservation_id) =>{ // If the user decides to decline the reservation, this option allows for that
     const token = localStorage.getItem("token");
     const options = {
         method: "PUT",
@@ -234,7 +288,7 @@ function LoansList() {
     }
   }
 
-  const approveLoanReturn = async (loan_id, book_id, condition) =>{
+  const approveLoanReturn = async (loan_id, book_id, condition) =>{ // Function that will approve the loan, meaning the user paid it off and will take it off their account.
     const token = localStorage.getItem("token");
     const elements = document.querySelectorAll(`[data-id="loan${loan_id}"]`);
     const options = {
@@ -244,12 +298,23 @@ function LoansList() {
         Authorization: `Bearer ${token}`, 
         }
     };
-    const dataValues = {};
+    const dataValues = {}; // Hashmap that will store key-value pairs from the loan inputs of the specify loan_id
     for(const elementInput of elements){
         dataValues[elementInput.dataset.field] = elementInput.value;
     }
+    // Sample of what the dataValues look like:
+    // {
+    //   username: "tony",
+    //   book_titles: "Hunger Games",
+    //   author: "Suzanne Collins",
+    //   isbn: "1234567890",
+    //   loan_date: "2025-11-01T12:00:00.000Z",
+    //   due_date: "2025-11-15T12:00:00.000Z",
+    //   return_date: "2025-11-20T12:00:00.000Z",
+    //   overdue_fee: "0.00"
+    // }
     let found = false;
-    for (const key in books) {
+    for (const key in books) { // Validator that will check if the book actually exists based on what the user modified for the book's values (title, author, isbn)
         const book = books[key];
         if (book.title.trim().toLowerCase() === dataValues["book_titles"].trim().toLowerCase() && book.author.trim().toLowerCase() === dataValues["author"].trim().toLowerCase() && book.isbn.trim().toLowerCase() === dataValues["isbn"].trim().toLowerCase()) {
             book_id = book.id;
@@ -274,7 +339,7 @@ function LoansList() {
     }
   }
 
-  const approveOverdueLoanReturn = async (loan_id, book_id, overdueFee, condition) =>{
+  const approveOverdueLoanReturn = async (loan_id, book_id, overdueFee, condition) =>{ // Function that will approve the loan and take it off the person's account
     const token = localStorage.getItem("token");
     const elements = document.querySelectorAll(`[data-id="loan${loan_id}"]`);
     const dataValues = {};
@@ -292,7 +357,7 @@ function LoansList() {
         overdue_fee: overdueFee, 
     }),
     };
-    for (const key in books) {
+    for (const key in books) { // Validator to make sure that the book modified by the user exists (or else it'll just stop and not go past the conditional statement for boolean value of found)
         const book = books[key];
         if (book.title.trim().toLowerCase() === dataValues["book_titles"].trim().toLowerCase() && book.author.trim().toLowerCase() === dataValues["author"].trim().toLowerCase() && book.isbn.trim().toLowerCase() === dataValues["isbn"].trim().toLowerCase()) {
             book_id = book.id;
@@ -336,6 +401,7 @@ function LoansList() {
             <tbody>
                 <tr>
                     {/* Usernames */}
+                    {/* Note that the data-id are what's targetted by document.querySelectorAll in order to get the values for that specific row of reservations/loans/overdue_loans, etc. While the data-field is what's used as essentially the way to access what type of data is at this data-id */}
                     <td>
                         <input data-id="addReservationID" className="inputStyle" data-field="username"></input>
                     </td>
@@ -387,9 +453,11 @@ function LoansList() {
             </thead>
             
             <tbody>
+                {/* Filters for all reservations currently present in the database that aren't of status CANCELLED */}
                 {reservations && reservations.filter(reservation => reservation.status.trim().toUpperCase() !== "CANCELLED").map((reservationObject) =>(
                     <tr key={reservationObject.id}>
                     {/* Usernames */}
+                    {/* Following alongside many filters below, we have ternary operators to make sure that an actual reservation exists for that specific info */}
                     <td>{users[reservationObject.user_id] ? <input className="inputStyle" data-id={reservationObject.id} data-field="username" defaultValue={users[reservationObject.user_id].username}></input> : "Loading"}
                     </td>
                     {/* Book Titles */}
@@ -435,6 +503,7 @@ function LoansList() {
             </thead>
     
             <tbody>
+                {/* Filters for loans that are currently of status "ACTIVE" and have no overdue_fee since that's a separate category */}
                 {loans && loans.filter(loan => loan.status.trim().toUpperCase() === "ACTIVE" && loan.overdue_fee === 0.0).map((loanObject) =>(
                     <tr key={loanObject.id}>
                     {/* Usernames */}
@@ -486,7 +555,8 @@ function LoansList() {
             </thead>
             
             <tbody>
-                {overdueloans && overdueloans.filter(loan => loan.status.trim().toUpperCase() === "ACTIVE" && loan.overdue_fee === 0.0).map((loanObject) =>(
+                {/* Filters for overdue loans, which are loans that have the datafield for an overdue due to the date where it's supposed to be returned isn't */}
+                {overdueloans && overdueloans.filter(loan => loan.status.trim().toUpperCase() === "ACTIVE").map((loanObject) =>(
                     <tr key={loanObject.id}>
                     {/* Usernames */}
                     <td>{users[loanObject.user_id] ? <input className="inputStyle" data-id={"loan"+loanObject.id} data-field="username" defaultValue={users[loanObject.user_id].username}></input> : "Loading"}
@@ -507,7 +577,8 @@ function LoansList() {
                     {/* Return Date */}
                     <td><input defaultValue={new Date().toISOString()} data-id={"loan"+loanObject.id} data-field="return_date"></input></td>  
                     {/* Overdue Fee */}
-                    <td><input defaultValue={loanObject.overdue_fee} data-id={"loan"+loanObject.id} data-field="due_date"></input></td>  
+                    <td><input defaultValue={loanObject.overdue_fee} data-id={"loan"+loanObject.id} data-field="overdue_fee"></input></td>
+
                     {/* Actions */}
                     <td>
                         <button type="button" onClick={()=>approveOverdueLoanReturn(loanObject.id,loanObject.book_id,loanObject.overdue_fee, false)} className="loanButtons">Approve Return</button>
@@ -536,6 +607,7 @@ function LoansList() {
             </thead>
             
             <tbody>
+                {/* Filters all loans that have a status of RETURNED for the user to view */}
                 {loans && loans.filter(loan => loan.status.trim().toUpperCase() === "RETURNED").map((loanObject) =>(
                     <tr key={loanObject.id}>
                     {/* Usernames */}

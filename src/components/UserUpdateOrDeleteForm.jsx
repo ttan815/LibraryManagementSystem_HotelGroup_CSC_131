@@ -1,9 +1,9 @@
 import './UserUpdateOrDeleteForm.css'
 import React, { useContext, useState, useEffect } from 'react'; 
 function UserUpdateOrDeleteForm(){
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState([]); // Users is an array that will hold all the users currently in the database, set by setUsers
     const loadUsers = async () =>{
-        const token = localStorage.getItem("token");
+        const token = localStorage.getItem("token"); // A token is necessary, which contains the info of the currently logged in user and will determine whether or not the user is of a role with admin or just user
         const res = await fetch("http://localhost:8000/api/admin/users",{
             headers:{
                 "Authorization": `Bearer ${token}`
@@ -12,10 +12,10 @@ function UserUpdateOrDeleteForm(){
         const data = await res.json();
         setUsers(data);
     }
-    useEffect(()=>{
+    useEffect(()=>{ // Function that will load all users from the database into users once the page is loaded or refreshed
         loadUsers();
     },[])
-    const updateUser = async (e) =>{
+    const updateUser = async (e) =>{ // Function that will modify the information of the user specified (email and full name)
         e.preventDefault();
         const token = localStorage.getItem("token");
         const res = await fetch("http://localhost:8000/api/users/me",{
@@ -29,9 +29,9 @@ function UserUpdateOrDeleteForm(){
         alert("Insufficient permissions to update user")
         }
         else{
-            const formData = new FormData(e.target);
+            const formData = new FormData(e.target); // Gets the data from the inputs when the form was submitted
 
-            let userID = null;
+            let userID = null; // Will become a value if a user is found with the specifications sent in the form (old email and old full name)
             const userCollectionResponse = await fetch("http://localhost:8000/api/admin/users",{
                 headers:{
                     Authorization: `Bearer ${token}`,
@@ -40,7 +40,7 @@ function UserUpdateOrDeleteForm(){
             let found = false;
             const allUsers = await userCollectionResponse.json();
             console.log(allUsers);
-            for(let i = 0; i < allUsers.length; i++){
+            for(let i = 0; i < allUsers.length; i++){ // Validator to ensure that the oldEmail and oldFullName matches with a user in the database, where if it is, it'll go ahead and update the user, or else it'll not continue with the procedure
             if(formData.get("oldEmail") == allUsers[i]["email"] && formData.get("oldFullName") == allUsers[i]["full_name"]){
                 userID = allUsers[i]["id"];
                 found = true;
@@ -73,7 +73,7 @@ function UserUpdateOrDeleteForm(){
             }
         }
     }
-    const deleteUser = async (e) =>{
+    const deleteUser = async (e) =>{ // Function that will delete the user with the specified information
         e.preventDefault();
         const token = localStorage.getItem("token");
         const res = await fetch("http://localhost:8000/api/users/me",{
@@ -98,7 +98,7 @@ function UserUpdateOrDeleteForm(){
             let found = false;
             const allUsers = await userCollectionResponse.json();
             console.log(allUsers);
-            for(let i = 0; i < allUsers.length; i++){
+            for(let i = 0; i < allUsers.length; i++){ // With all the users, a validator logic created to ensure that the information inputted in the form is an actual user in order for that specified user to be deleted.
             if(formData.get("username") == allUsers[i]["username"]){
                 userID = allUsers[i]["id"];
                 found = true;
@@ -130,6 +130,7 @@ function UserUpdateOrDeleteForm(){
     return(
         <>
             <div className="addAndEditBookForm">
+                {/* When the Update User Information button is clicked, the updateUser function is called */}
                 <form onSubmit={updateUser}>
                     <h1 id="addBookTitle">Update User</h1>
                     <div className="column">
@@ -150,6 +151,7 @@ function UserUpdateOrDeleteForm(){
                     </div> 
                     <button className="btn btn-primary submitButton" type="submit">Update User Information</button>
                 </form>
+                {/* When the Delete User button is clicked, the deleteUser function is called */}
                 <form onSubmit={deleteUser}>
                     <h1 id="addBookTitle">Delete User</h1>
                     <div className="column">
@@ -170,6 +172,7 @@ function UserUpdateOrDeleteForm(){
                 </tr>
             </thead>
             
+            {/* Displays all the current users from the database as a visual aid to find what to modify and delete */}
             <tbody>
                 {users && users.map((userObject) =>(
                     <tr key={userObject.id}>
