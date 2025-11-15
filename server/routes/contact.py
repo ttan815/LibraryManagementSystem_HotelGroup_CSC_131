@@ -3,6 +3,8 @@ import schemas
 
 router = APIRouter()
 
+
+# Not used, but when used with method POST, it takes parameters: name, email, phone, and message.
 @router.post("/")
 def submit_contact_form(contact: schemas.ContactForm):
     print(f"Contact form submission:")

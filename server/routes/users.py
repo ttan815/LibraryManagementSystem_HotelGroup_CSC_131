@@ -7,11 +7,36 @@ import schemas
 from auth import get_current_active_user
 
 router = APIRouter()
+# Note that with parameters past, some are optional, they can be seen when looking in the schemas used to create these APIS.
 
+# /me when used with method GET, will return the user information based on the token passed
+# The response will look like:
+# {
+#   "email": "user@example.com",
+#   "username": "string",
+#   "full_name": "string",
+#   "id": 0,
+#   "role": "user",
+#   "is_active": true,
+#   "membership_dues": 0,
+#   "created_at": "2025-11-15T09:23:10.922Z"
+# }
 @router.get("/me", response_model=schemas.User)
 def get_current_user_info(current_user: models.User = Depends(get_current_active_user)):
     return current_user
 
+# /me when used with method POST, will go ahead and update the user information based on information passed: email, full_name, and membership_dues.
+# The response will look like:
+# {
+#   "email": "user@example.com",
+#   "username": "string",
+#   "full_name": "string",
+#   "id": 0,
+#   "role": "user",
+#   "is_active": true,
+#   "membership_dues": 0,
+#   "created_at": "2025-11-15T09:23:48.540Z"
+# }
 @router.put("/me", response_model=schemas.User)
 def update_current_user(
     user_update: schemas.UserUpdate,
@@ -25,6 +50,20 @@ def update_current_user(
     db.refresh(current_user)
     return current_user
 
+# /me/loans when used with method GET will get all the loans the user has for their user_id
+# The response will look like this:
+# [
+#   {
+#     "book_id": 0,
+#     "due_date": "2025-11-15T09:24:48.128Z",
+#     "id": 0,
+#     "user_id": 0,
+#     "loan_date": "2025-11-15T09:24:48.128Z",
+#     "return_date": "2025-11-15T09:24:48.128Z",
+#     "status": "active",
+#     "overdue_fee": 0
+#   }
+# ]
 @router.get("/me/loans", response_model=List[schemas.Loan])
 def get_user_loans(
     db: Session = Depends(get_db),
@@ -32,6 +71,20 @@ def get_user_loans(
 ):
     return current_user.loans
 
+# /me/reservations when used with method GET will return all the reservations for their user_id
+# The response will look like:
+# [
+#   {
+#     "book_id": 0,
+#     "reservation_type": "loan",
+#     "id": 0,
+#     "user_id": 0,
+#     "reservation_date": "2025-11-15T09:25:38.596Z",
+#     "pickup_date": "2025-11-15T09:25:38.596Z",
+#     "expiry_date": "2025-11-15T09:25:38.596Z",
+#     "status": "pending"
+#   }
+# ]
 @router.get("/me/reservations", response_model=List[schemas.Reservation])
 def get_user_reservations(
     db: Session = Depends(get_db),
@@ -39,6 +92,17 @@ def get_user_reservations(
 ):
     return current_user.reservations
 
+
+# /me/wishlist when used with method GET will return all the wishlists for their user_id
+# The response will look like:
+# [
+#   {
+#     "id": 0,
+#     "user_id": 0,
+#     "book_id": 0,
+#     "added_at": "2025-11-15T09:26:45.108Z"
+#   }
+# ]
 @router.get("/me/wishlist", response_model=List[schemas.Wishlist])
 def get_user_wishlist(
     db: Session = Depends(get_db),
@@ -46,6 +110,7 @@ def get_user_wishlist(
 ):
     return current_user.wishlist
 
+# /me/wishlist when used with method POST will go ahead and add a wishlist to the database based on the parameters: book_id, and will check if it exists already, where it'll throw an error if so, or if that book specified to be wishlisted doesn't exist.
 @router.post("/me/wishlist", response_model=schemas.Wishlist)
 def add_to_wishlist(
     wishlist_item: schemas.WishlistCreate,
@@ -70,6 +135,7 @@ def add_to_wishlist(
     db.refresh(wishlist)
     return wishlist
 
+# /me/wishlist/{book_id} when used with method DELETE will remove the book object with the book_id passed as a parameter with the API, and if it's not found it'll throw an error.
 @router.delete("/me/wishlist/{book_id}")
 def remove_from_wishlist(
     book_id: int,

@@ -3,6 +3,8 @@ from typing import Optional, List
 from datetime import datetime
 from models import UserRole, LoanStatus, ReservationStatus
 
+
+# Schemas are essentially classes that will state what variables constitute the parameters required/optional for the API request, when classes have a parameter, it essentially inherits that parameter's variables (including required/optionals).
 class UserBase(BaseModel):
     email: EmailStr
     username: str

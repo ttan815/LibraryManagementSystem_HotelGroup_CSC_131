@@ -8,6 +8,9 @@ from auth import get_current_active_user
 
 router = APIRouter()
 
+# Note that with parameters past, some are optional, they can be seen when looking in the schemas used to create these APIS.
+
+# / when used with method POST, it will take parameters: book_id, reservation_type, expiry_date (experation date), and user_id 
 @router.post("/", response_model=schemas.Reservation)
 def create_reservation(
     reservation: schemas.ReservationCreate,
@@ -18,7 +21,7 @@ def create_reservation(
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 
-    active_reservation = db.query(models.Reservation).filter(
+    active_reservation = db.query(models.Reservation).filter( #Checks in the databsae if there was already a reservation for this book made under the cureent user
         models.Reservation.user_id == current_user.id,
         models.Reservation.book_id == reservation.book_id,
         models.Reservation.status.in_([models.ReservationStatus.PENDING, models.ReservationStatus.ACTIVE])
@@ -47,6 +50,20 @@ def create_reservation(
     db.refresh(db_reservation)
     return db_reservation
 
+# / when used with the method GET, it'll go ahead and return all the reservations, for both admins and users
+# Response will look like:
+# [
+#   {
+#     "book_id": 0,
+#     "reservation_type": "loan",
+#     "id": 0,
+#     "user_id": 0,
+#     "reservation_date": "2025-11-15T09:20:19.686Z",
+#     "pickup_date": "2025-11-15T09:20:19.686Z",
+#     "expiry_date": "2025-11-15T09:20:19.686Z",
+#     "status": "pending"
+#   }
+# ]
 @router.get("/", response_model=List[schemas.Reservation])
 def get_reservations(
     skip: int = 0,
@@ -63,6 +80,7 @@ def get_reservations(
         # ).offset(skip).limit(limit).all()
     return reservations
 
+# /{reservation_id}/cancel when used with method PUT, will look at the parameter reservation_id passed in the API and see if it exists in the database, where if it doesn't it'll throw an error.
 @router.put("/{reservation_id}/cancel")
 def cancel_reservation(
     reservation_id: int,
