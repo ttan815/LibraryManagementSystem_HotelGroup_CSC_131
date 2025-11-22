@@ -1,4 +1,4 @@
-import "./LoansList.css";
+import "../pages/style.css";
 import React, { useContext, useState, useEffect } from 'react'; 
 
 function LoansList() {

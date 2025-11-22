@@ -1,81 +1,79 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { AppProvider } from './context/AppContext';
+import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import AdminPage from './pages/AdminPage';
 import UserPage from './pages/UserPage';
 import BooksPage from './pages/BooksPage';
-import BookForm from './components/BookForm.jsx'
-import UserForm from './components/UserForm.jsx'
+import BookForm from './components/BookForm.jsx';
+import AuthPage from './pages/AuthPage.jsx';
 import UserUpdateOrDeleteForm from './components/UserUpdateOrDeleteForm.jsx';
 import LoansList from './components/LoansList.jsx';
-import Footer from './components/Footer'
-import CreditsPage from './pages/CreditsPage.jsx'
-import ContactPage from './pages/ContactsPage.jsx'
+import Footer from './components/Footer';
+import CreditsPage from './pages/CreditsPage.jsx';
+import ContactPage from './pages/ContactsPage.jsx';
+import AboutPage from './pages/AboutPage.jsx';
 import './App.css';
 
 /**
  * Main App Component
- * Simple navigation without React Router for testing
+ * Uses React state-based navigation through Navbar only
  */
 const App = () => {
   const [currentPage, setCurrentPage] = useState('home');
+
+  // Listen for navigation events from components
+  useEffect(() => {
+    const handleAppNavigation = (event) => {
+      const { page } = event.detail;
+      console.log(`App received navigation request: ${page}`);
+      setCurrentPage(page);
+    };
+
+    window.addEventListener('appNavigation', handleAppNavigation);
+    
+    return () => {
+      window.removeEventListener('appNavigation', handleAppNavigation);
+    };
+  }, []);
 
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
         return <HomePage />;
+      case 'about':
+        return <AboutPage />;
       case 'credits':
-        return (
-          <div className="page-content">
-            <CreditsPage/>
-            <Footer></Footer>
-          </div>
-        );
+        return <CreditsPage />;
       case 'contact':
-        return (
-          <div className="page-content">
-            <ContactPage/>
-            <Footer></Footer>
-          </div>
-        );
+        return <ContactPage />;
       case 'admin':
         return <AdminPage />;
       case 'profile':
         return <UserPage />;
       case 'books':
-        return (
-          <div className="page-content">
-            <BooksPage/>
-            <Footer></Footer>
-          </div>
-        );
+        return <BooksPage />;
       case 'booksForm':
-        return (
-          <div className="page-content">
-            <BookForm></BookForm>
-            <Footer></Footer>
-          </div>
-        );
+        return <BookForm />;
       case 'userUpdateOrDelete':
-        return (
-          <div className="page-content">
-            <UserUpdateOrDeleteForm></UserUpdateOrDeleteForm>
-            <Footer></Footer>
-          </div>
-        );
+        return <UserUpdateOrDeleteForm />;
       case 'loans':
+        return <LoansList />;
+      case 'auth':
+        return <AuthPage onLoginSuccess={() => setCurrentPage('profile')} />;
+      case 'privacy':
         return (
-          <div className="page-content" style={{ padding: '2rem' }}>
-            <LoansList></LoansList>
-            <Footer></Footer>
+          <div className="page-content" style={{ padding: '2rem', textAlign: 'center' }}>
+            <h1>Privacy Policy</h1>
+            <p>Privacy policy page coming soon...</p>
           </div>
         );
-      case 'auth':
+      case 'terms':
         return (
-          <div className="page-content" style={{ padding: '2rem' }}>
-            <UserForm onLoginSuccess={() => setCurrentPage('profile')} />
-            <Footer></Footer>
+          <div className="page-content" style={{ padding: '2rem', textAlign: 'center' }}>
+            <h1>Terms of Service</h1>
+            <p>Terms of service page coming soon...</p>
           </div>
         );
       default:
@@ -87,46 +85,13 @@ const App = () => {
     <AuthProvider>
       <AppProvider>
         <div className="app">
-          {/* Simple Navigation for Testing */}
-          <nav style={{ 
-            background: '#343a40', 
-            padding: '1rem', 
-            display: 'flex', 
-            gap: '1rem',
-            justifyContent: 'center'
-          }}>
-            <button onClick={() => setCurrentPage('home')} className="btn btn-secondary">
-              Home
-            </button>
-            <button onClick={() => setCurrentPage('books')} className="btn btn-secondary">
-              Books
-            </button>
-            <button onClick={() => setCurrentPage('credits')} className="btn btn-secondary">
-              Credits
-            </button>
-            <button onClick={() => setCurrentPage('contact')} className="btn btn-secondary">
-              Contact
-            </button>
-            <button onClick={() => setCurrentPage('booksForm')} className="btn btn-secondary">
-              BooksForm
-            </button>
-            <button onClick={() => setCurrentPage('userUpdateOrDelete')} className="btn btn-secondary">
-              User (Updates & Deletes)
-            </button>
-            <button onClick={() => setCurrentPage('profile')} className="btn btn-secondary">
-              Profile
-            </button>
-            <button onClick={() => setCurrentPage('admin')} className="btn btn-secondary">
-              Admin
-            </button>
-            <button onClick={() => setCurrentPage('loans')} className="btn btn-secondary">
-              My Loans
-            </button>
-            <button onClick={() => setCurrentPage('auth')} className="btn btn-secondary">
-              Login
-            </button>
-          </nav>
-          {renderPage()}
+          {/* Only one navbar - the main Navbar component */}
+          <Navbar onNavigate={setCurrentPage} />
+          <main className="app-main">
+            {renderPage()}
+          </main>
+          {/* Footer with navigation capability */}
+          <Footer onNavigate={setCurrentPage} />
         </div>
       </AppProvider>
     </AuthProvider>

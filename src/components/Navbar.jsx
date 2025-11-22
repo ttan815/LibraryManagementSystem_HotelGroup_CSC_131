@@ -8,20 +8,19 @@ import '../components/Navbar.css';
  * Provides main navigation links and user authentication status
  * Includes notifications and user menu
  */
-const Navbar = () => {
+const Navbar = ({ onNavigate }) => {
   const { user, logout } = useContext(AuthContext);
 
   // Handle user logout
   const handleLogout = () => {
     logout();
     // Redirect to home page after logout
-    window.location.reload();
+    onNavigate('home');
   };
 
-  // Simple navigation handler
+  // Simple navigation handler using React state
   const navigateTo = (path) => {
-    window.location.hash = path;
-    window.location.reload();
+    onNavigate(path);
   };
 
   return (
@@ -36,8 +35,6 @@ const Navbar = () => {
       <ul className="nav-links">
         <li><a href="#home" onClick={(e) => { e.preventDefault(); navigateTo('home'); }}>Home</a></li>
         <li><a href="#books" onClick={(e) => { e.preventDefault(); navigateTo('books'); }}>Books</a></li>
-        <li><a href="#books" onClick={(e) => { e.preventDefault(); navigateTo('credits'); }}>Credits</a></li>
-        <li><a href="#books" onClick={(e) => { e.preventDefault(); navigateTo('contact'); }}>Contact</a></li>
         
         {/* Conditional links based on user authentication */}
         {user ? (
@@ -60,7 +57,7 @@ const Navbar = () => {
         {/* User menu */}
         {user && (
           <div className="user-menu">
-            <span>Welcome, {user.name}</span>
+            <span>Welcome, {user.full_name || user.username || 'User'}</span>
             <button onClick={handleLogout} className="logout-btn">
               Logout
             </button>

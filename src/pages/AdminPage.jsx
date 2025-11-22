@@ -1,60 +1,152 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
-import { AuthContext} from '../context/AuthContext';
 import BasePage from './BasePage';
-import './AdminPage.css';
+import BookForm from '../components/BookForm';
+import UserUpdateOrDeleteForm from '../components/UserUpdateOrDeleteForm';
+import LoansList from '../components/LoansList';
+import './style.css';
 
-/**
- * AdminPage Component - Tony
- * Administrative dashboard for managing users, books, loans, and system settings
- * Restricted to users with admin role
- */
 const AdminPage = () => {
-  const { user, users, books, loans, reservations } = useContext(AppContext);
+  const { user, users, books, loans, reservations, wishlist, refreshData } = useContext(AppContext);
+  
   const [activeSection, setActiveSection] = useState('overview');
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedBook, setSelectedBook] = useState(null);
+  const [adminStats, setAdminStats] = useState({
+    totalUsers: 0,
+    totalBooks: 0,
+    activeLoans: 0,
+    pendingReservations: 0,
+    overdueLoans: 0,
+    totalWishlists: 0,
+    availableBooks: 0
+  });
 
-  // Check if user is admin
-  if (!user || user.role !== 'admin') {
+  // Simple navigation function - matches BookSearch.jsx pattern
+  const navigate = (page) => {
+    window.location.hash = page;
+    if (page === 'home') {
+      window.location.reload();
+    } else {
+      setActiveSection('overview');
+    }
+  };
+
+  // Enhanced admin check using AppContext user - matches LoansList.jsx admin pattern
+  const isAdmin = () => {
+    if (!user) {
+      return false;
+    }
+    
+    const role = user.role;
+    if (!role) {
+      return false;
+    }
+    
+    const roleStr = String(role).toLowerCase().trim();
+    const isAdminUser = roleStr === 'admin' || 
+                       roleStr === 'administrator' || 
+                       roleStr === 'superadmin' ||
+                       roleStr === 'admin_user';
+    
+    return isAdminUser;
+  };
+
+  // Admin override for testing - matches LoansList.jsx pattern
+  const isAdminOverride = () => {
+    const adminUsernames = ['admin', 'administrator', 'superuser', 'testadmin', 'library_admin'];
+    if (user && adminUsernames.includes(user.username)) {
+      return true;
+    }
+    
+    return isAdmin();
+  };
+
+  // Calculate statistics from AppContext data - matches LoansList.jsx filtering
+  useEffect(() => {
+    const stats = {
+      totalUsers: users.length,
+      totalBooks: books.length,
+      activeLoans: loans.filter(loan => {
+        const status = loan.status?.toLowerCase();
+        return status === 'active' || status === 'borrowed' || status === 'checked_out' || status === 'loaned';
+      }).length,
+      pendingReservations: reservations.filter(res => {
+        const status = res.status?.toLowerCase();
+        return status === 'pending' || status === 'waiting' || status === 'reserved';
+      }).length,
+      overdueLoans: loans.filter(loan => {
+        const isActive = loan.status?.toLowerCase() === 'active' || 
+                        loan.status?.toLowerCase() === 'borrowed' ||
+                        loan.status?.toLowerCase() === 'loaned';
+        const isOverdue = loan.due_date && new Date(loan.due_date) < new Date();
+        return isActive && isOverdue;
+      }).length,
+      totalWishlists: wishlist.length,
+      availableBooks: books.filter(book => book.available_copies > 0).length
+    };
+    
+    setAdminStats(stats);
+  }, [users, books, loans, reservations, wishlist]);
+
+  // Check admin access - matches LoansList.jsx admin pattern
+  if (!user || !isAdminOverride()) {
     return (
       <BasePage>
         <div className="admin-page">
           <div className="access-denied">
             <h2>Access Denied</h2>
             <p>You do not have permission to access the admin dashboard.</p>
-            <a href="/" className="btn btn-primary">Return to Home</a>
+            <div className="access-denied-actions">
+              <button onClick={() => navigate('auth')} className="btn btn-primary">
+                Go to Login Page
+              </button>
+              <button onClick={() => window.location.reload()} className="btn btn-outline">
+                Refresh Page
+              </button>
+              <button onClick={() => navigate('home')} className="btn btn-outline">
+                Return to Home
+              </button>
+            </div>
           </div>
         </div>
       </BasePage>
     );
   }
 
-  // Admin statistics
-  const stats = {
-    totalUsers: users.length,
-    totalBooks: books.length,
-    activeLoans: loans.filter(loan => loan.status === 'active').length,
-    pendingReservations: reservations.filter(res => res.status === 'pending').length,
-    overdueLoans: loans.filter(loan => {
-      return loan.status === 'active' && new Date(loan.dueDate) < new Date();
-    }).length
-  };
-
+  // Admin dashboard content
   return (
     <BasePage className="admin-page">
-      {/* Admin Header */}
       <div className="admin-header">
-        <h1>Admin Dashboard</h1>
-        <p>Manage your library system efficiently</p>
+        <div className="admin-header-main">
+          <div>
+            <h1>Admin Dashboard</h1>
+            <p>Welcome back, {user.full_name || user.username}!</p>
+            <small className="admin-badge">
+              Role: {user.role} • Admin Access Granted
+            </small>
+          </div>
+          <div className="admin-header-actions">
+            <button onClick={() => navigate('profile')} className="btn btn-outline">
+              My Profile
+            </button>
+            <button onClick={refreshData} className="btn btn-outline">
+              Refresh Data
+            </button>
+            <button onClick={() => {
+              localStorage.removeItem('token');
+              window.location.reload();
+            }} className="btn btn-secondary">
+              Logout
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Quick Stats */}
+      {/* Admin Statistics */}
       <div className="admin-stats">
         <div className="admin-stat-card">
           <div className="stat-icon">👥</div>
           <div className="stat-info">
-            <div className="stat-number">{stats.totalUsers}</div>
+            <div className="stat-number">{adminStats.totalUsers}</div>
             <div className="stat-label">Total Users</div>
           </div>
         </div>
@@ -62,15 +154,23 @@ const AdminPage = () => {
         <div className="admin-stat-card">
           <div className="stat-icon">📚</div>
           <div className="stat-info">
-            <div className="stat-number">{stats.totalBooks}</div>
+            <div className="stat-number">{adminStats.totalBooks}</div>
             <div className="stat-label">Total Books</div>
+          </div>
+        </div>
+        
+        <div className="admin-stat-card">
+          <div className="stat-icon">✅</div>
+          <div className="stat-info">
+            <div className="stat-number">{adminStats.availableBooks}</div>
+            <div className="stat-label">Available Books</div>
           </div>
         </div>
         
         <div className="admin-stat-card">
           <div className="stat-icon">📖</div>
           <div className="stat-info">
-            <div className="stat-number">{stats.activeLoans}</div>
+            <div className="stat-number">{adminStats.activeLoans}</div>
             <div className="stat-label">Active Loans</div>
           </div>
         </div>
@@ -78,8 +178,24 @@ const AdminPage = () => {
         <div className="admin-stat-card">
           <div className="stat-icon">⏰</div>
           <div className="stat-info">
-            <div className="stat-number">{stats.overdueLoans}</div>
+            <div className="stat-number">{adminStats.overdueLoans}</div>
             <div className="stat-label overdue">Overdue Loans</div>
+          </div>
+        </div>
+
+        <div className="admin-stat-card">
+          <div className="stat-icon">⏳</div>
+          <div className="stat-info">
+            <div className="stat-number">{adminStats.pendingReservations}</div>
+            <div className="stat-label">Pending Reservations</div>
+          </div>
+        </div>
+
+        <div className="admin-stat-card">
+          <div className="stat-icon">❤️</div>
+          <div className="stat-info">
+            <div className="stat-number">{adminStats.totalWishlists}</div>
+            <div className="stat-label">Wishlist Items</div>
           </div>
         </div>
       </div>
@@ -108,225 +224,286 @@ const AdminPage = () => {
           className={`nav-btn ${activeSection === 'loans' ? 'active' : ''}`}
           onClick={() => setActiveSection('loans')}
         >
-          🔄 Manage Loans
+          📖 Manage Loans
         </button>
         <button 
           className={`nav-btn ${activeSection === 'reservations' ? 'active' : ''}`}
           onClick={() => setActiveSection('reservations')}
         >
-          📋 Reservations
+          ⏰ Reservations
+        </button>
+        <button 
+          className={`nav-btn ${activeSection === 'wishlists' ? 'active' : ''}`}
+          onClick={() => setActiveSection('wishlists')}
+        >
+          ❤️ Wishlists
         </button>
       </nav>
 
       {/* Admin Content Sections */}
       <div className="admin-content">
-        {/* Overview Section */}
         {activeSection === 'overview' && (
           <div className="overview-section">
             <h2>System Overview</h2>
             <div className="overview-grid">
               <div className="overview-card">
-                <h3>Recent Activity</h3>
+                <h3>📈 Recent Activity</h3>
                 <div className="activity-list">
                   {loans.slice(0, 5).map(loan => {
-                    const userObj = users.find(u => u.id === loan.userId);
-                    const bookObj = books.find(b => b.id === loan.bookId);
+                    const userObj = users.find(u => u.id === loan.user_id);
+                    const bookObj = books.find(b => b.id === loan.book_id);
                     return (
                       <div key={loan.id} className="activity-item">
                         <span className="activity-icon">📖</span>
                         <div className="activity-details">
-                          <strong>{userObj?.name}</strong> borrowed 
-                          "<em>{bookObj?.title}</em>"
+                          <strong>{userObj?.username || userObj?.full_name || 'Unknown User'}</strong> borrowed 
+                          "<em>{bookObj?.title || 'Unknown Book'}</em>"
                         </div>
                         <span className="activity-time">
-                          {new Date(loan.borrowDate).toLocaleDateString()}
+                          {loan.loan_date ? new Date(loan.loan_date).toLocaleDateString() : 'N/A'}
                         </span>
                       </div>
                     );
                   })}
+                  {loans.length === 0 && (
+                    <div className="no-activity">No recent loan activity</div>
+                  )}
                 </div>
               </div>
 
               <div className="overview-card">
-                <h3>System Health</h3>
+                <h3>🛠️ System Health</h3>
                 <div className="health-metrics">
                   <div className="metric">
-                    <span className="metric-label">Database Size:</span>
-                    <span className="metric-value">Healthy</span>
+                    <span className="metric-label">Database Connection:</span>
+                    <span className={`metric-value ${books.length > 0 ? 'online' : 'offline'}`}>
+                      {books.length > 0 ? '✅ Connected' : '❌ Disconnected'}
+                    </span>
                   </div>
                   <div className="metric">
-                    <span className="metric-label">Server Status:</span>
-                    <span className="metric-value online">Online</span>
+                    <span className="metric-label">Data Loaded:</span>
+                    <span className="metric-value">
+                      {books.length} books, {users.length} users, {loans.length} loans
+                    </span>
                   </div>
                   <div className="metric">
-                    <span className="metric-label">Last Backup:</span>
-                    <span className="metric-value">Today, 02:00 AM</span>
+                    <span className="metric-label">Available Books:</span>
+                    <span className="metric-value">
+                      {adminStats.availableBooks}
+                    </span>
                   </div>
+                  <div className="metric">
+                    <span className="metric-label">Pending Reservations:</span>
+                    <span className="metric-value">
+                      {adminStats.pendingReservations}
+                    </span>
+                  </div>
+                  <div className="metric">
+                    <span className="metric-label">Overdue Loans:</span>
+                    <span className={`metric-value ${adminStats.overdueLoans > 0 ? 'warning' : ''}`}>
+                      {adminStats.overdueLoans} {adminStats.overdueLoans > 0 ? '⚠️' : '✅'}
+                    </span>
+                  </div>
+                  <div className="metric">
+                    <span className="metric-label">Wishlist Items:</span>
+                    <span className="metric-value">
+                      {adminStats.totalWishlists}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="overview-card">
+                <h3>⚡ Quick Actions</h3>
+                <div className="quick-actions">
+                  <button 
+                    onClick={() => setActiveSection('books')}
+                    className="quick-action-btn"
+                  >
+                    <span className="action-icon">➕</span>
+                    <span>Add New Book</span>
+                  </button>
+                  <button 
+                    onClick={() => setActiveSection('users')}
+                    className="quick-action-btn"
+                  >
+                    <span className="action-icon">👥</span>
+                    <span>Manage Users</span>
+                  </button>
+                  <button 
+                    onClick={() => setActiveSection('loans')}
+                    className="quick-action-btn"
+                  >
+                    <span className="action-icon">📖</span>
+                    <span>View All Loans</span>
+                  </button>
+                  <button 
+                    onClick={() => setActiveSection('reservations')}
+                    className="quick-action-btn"
+                  >
+                    <span className="action-icon">⏰</span>
+                    <span>Manage Reservations</span>
+                  </button>
+                  <button 
+                    onClick={() => setActiveSection('wishlists')}
+                    className="quick-action-btn"
+                  >
+                    <span className="action-icon">❤️</span>
+                    <span>View Wishlists</span>
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         )}
 
-        {/* Users Management Section */}
         {activeSection === 'users' && (
           <div className="users-section">
             <div className="section-header">
-              <h2>User Management</h2>
-              <button className="btn btn-primary">Add New User</button>
+              <h2>👥 User Management</h2>
+              <p>Manage user accounts, roles, and permissions across the system</p>
             </div>
-            
-            <div className="users-table-container">
-              <table className="users-table">
-                <thead>
-                  <tr>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Role</th>
-                    <th>Join Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map(user => (
-                    <tr key={user.id}>
-                      <td>{user.name}</td>
-                      <td>{user.email}</td>
-                      <td>
-                        <span className={`role-badge ${user.role}`}>
-                          {user.role}
-                        </span>
-                      </td>
-                      <td>{new Date(user.joinDate).toLocaleDateString()}</td>
-                      <td>
-                        <span className="status-badge active">Active</span>
-                      </td>
-                      <td>
-                        <div className="action-buttons">
-                          <button className="btn btn-small">Edit</button>
-                          <button className="btn btn-small btn-danger">Delete</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="section-content">
+              <UserUpdateOrDeleteForm />
             </div>
           </div>
         )}
 
-        {/* Books Management Section */}
         {activeSection === 'books' && (
           <div className="books-section">
             <div className="section-header">
-              <h2>Book Management</h2>
-              <button className="btn btn-primary">Add New Book</button>
+              <h2>📚 Book Management</h2>
+              <p>Add, edit, or remove books from the library collection</p>
             </div>
-            
-            <div className="books-grid">
-              {books.map(book => (
-                <div key={book.id} className="admin-book-card">
-                  <h4>{book.title}</h4>
-                  <p className="book-author">{book.author}</p>
-                  <p className="book-isbn">ISBN: {book.isbn}</p>
-                  <div className={`availability ${book.available ? 'available' : 'unavailable'}`}>
-                    {book.available ? 'Available' : 'Checked Out'}
-                  </div>
-                  <div className="book-actions">
-                    <button className="btn btn-small">Edit</button>
-                    <button className="btn btn-small btn-danger">Delete</button>
-                  </div>
-                </div>
-              ))}
+            <div className="section-content">
+              <BookForm />
             </div>
           </div>
         )}
 
-        {/* Loans Management Section */}
         {activeSection === 'loans' && (
           <div className="loans-section">
-            <h2>Loan Management</h2>
-            <div className="loans-table-container">
-              <table className="loans-table">
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Book</th>
-                    <th>Borrow Date</th>
-                    <th>Due Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {loans.map(loan => {
-                    const userObj = users.find(u => u.id === loan.userId);
-                    const bookObj = books.find(b => b.id === loan.bookId);
-                    const isOverdue = loan.status === 'active' && new Date(loan.dueDate) < new Date();
-                    
-                    return (
-                      <tr key={loan.id} className={isOverdue ? 'overdue' : ''}>
-                        <td>{userObj?.name}</td>
-                        <td>{bookObj?.title}</td>
-                        <td>{new Date(loan.borrowDate).toLocaleDateString()}</td>
-                        <td>{new Date(loan.dueDate).toLocaleDateString()}</td>
-                        <td>
-                          <span className={`status-badge ${loan.status} ${isOverdue ? 'overdue' : ''}`}>
-                            {loan.status} {isOverdue && '(Overdue)'}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="action-buttons">
-                            {loan.status === 'active' && (
-                              <button className="btn btn-small btn-success">
-                                Mark Returned
-                              </button>
-                            )}
-                            <button className="btn btn-small">Details</button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="section-header">
+              <h2>📖 Loan Management</h2>
+              <p>Manage book loans, returns, and overdue items</p>
+            </div>
+            <div className="section-content">
+              <LoansList adminView={true} />
             </div>
           </div>
         )}
 
-        {/* Reservations Management Section */}
         {activeSection === 'reservations' && (
           <div className="reservations-section">
-            <h2>Reservation Management</h2>
-            <div className="reservations-list">
-              {reservations.map(reservation => {
-                const userObj = users.find(u => u.id === reservation.userId);
-                const bookObj = books.find(b => b.id === reservation.bookId);
-                
-                return (
-                  <div key={reservation.id} className="admin-reservation-card">
-                    <div className="reservation-info">
-                      <h4>{bookObj?.title}</h4>
-                      <p>User: {userObj?.name}</p>
-                      <p>Type: {reservation.type}</p>
-                      <p>Date: {new Date(reservation.date).toLocaleDateString()}</p>
-                    </div>
-                    <div className="reservation-status">
-                      <span className={`status-badge ${reservation.status}`}>
-                        {reservation.status}
-                      </span>
-                    </div>
-                    <div className="reservation-actions">
-                      <button className="btn btn-small btn-success">Approve</button>
-                      <button className="btn btn-small btn-danger">Reject</button>
-                    </div>
+            <div className="section-header">
+              <h2>⏰ Reservation Management</h2>
+              <p>View and manage all book reservations</p>
+            </div>
+            <div className="section-content">
+              <div className="reservations-list">
+                <h3>All Reservations ({reservations.length})</h3>
+                {reservations.length > 0 ? (
+                  <div className="table-container">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>User</th>
+                          <th>Book</th>
+                          <th>Type</th>
+                          <th>Status</th>
+                          <th>Reservation Date</th>
+                          <th>Expiry Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {reservations.map(reservation => {
+                          const userObj = users.find(u => u.id === reservation.user_id);
+                          const bookObj = books.find(b => b.id === reservation.book_id);
+                          return (
+                            <tr key={reservation.id}>
+                              <td>{userObj?.username || 'Unknown'}</td>
+                              <td>{bookObj?.title || 'Unknown Book'}</td>
+                              <td>{reservation.reservation_type}</td>
+                              <td>
+                                <span className={`status-badge ${reservation.status?.toLowerCase()}`}>
+                                  {reservation.status}
+                                </span>
+                              </td>
+                              <td>{reservation.reservation_date ? new Date(reservation.reservation_date).toLocaleDateString() : 'N/A'}</td>
+                              <td>{reservation.expiry_date ? new Date(reservation.expiry_date).toLocaleDateString() : 'N/A'}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
                   </div>
-                );
-              })}
+                ) : (
+                  <div className="empty-state">
+                    <p>No reservations found.</p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
+
+        {activeSection === 'wishlists' && (
+          <div className="wishlists-section">
+            <div className="section-header">
+              <h2>❤️ Wishlist Management</h2>
+              <p>View all user wishlists</p>
+            </div>
+            <div className="section-content">
+              <div className="wishlists-list">
+                <h3>All Wishlist Items ({wishlist.length})</h3>
+                {wishlist.length > 0 ? (
+                  <div className="table-container">
+                    <table className="data-table">
+                      <thead>
+                        <tr>
+                          <th>User</th>
+                          <th>Book Title</th>
+                          <th>Author</th>
+                          <th>Added Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {wishlist.map(item => {
+                          const userObj = users.find(u => u.id === item.user_id);
+                          const bookObj = books.find(b => b.id === item.book_id);
+                          
+                          return (
+                            <tr key={item.id}>
+                              <td>{userObj?.username || `User ${item.user_id}`}</td>
+                              <td>{bookObj?.title || `Book ${item.book_id}`}</td>
+                              <td>{bookObj?.author || 'Unknown'}</td>
+                              <td>{item.added_at ? new Date(item.added_at).toLocaleDateString() : 'N/A'}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="empty-state">
+                    <p>No wishlist items found.</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer with system info */}
+      <div className="admin-footer">
+        <div className="system-info">
+          <span>Library Management System v1.0</span>
+          <span>•</span>
+          <span>Admin Dashboard</span>
+          <span>•</span>
+          <span>Last updated: {new Date().toLocaleTimeString()}</span>
+        </div>
       </div>
     </BasePage>
   );

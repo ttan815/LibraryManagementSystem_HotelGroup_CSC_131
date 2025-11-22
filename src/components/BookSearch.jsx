@@ -1,5 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react'; 
-import './BookSearch.css'
+import ReservationForm from './ReservationForm';
+import '../pages/style.css'
 
 function BookSearch() {
 /**
@@ -16,11 +17,22 @@ function BookSearch() {
   const [bookLibrary, setBooks] = useState([]); // The books from the database stored in an array (bookLibrary) and a setter function to define books in the array
   const [wishlists, setWishlists] = useState([]); // Books wishlisted by the user stored in wishLists and a setter function to set books for wishlist in the array
   const [currentUser, setCurrentUser] = useState(null); // gets the user for the website currently as currentUser, with setCurrentUuser to initialize currentUser as whoeerver is using it (by their ID)
+  const [showReservationForm, setShowReservationForm] = useState(false); // State to control reservation form visibility
+  const [selectedBookId, setSelectedBookId] = useState(null); // State to track which book is being reserved
 
   const handleSearch = () => { // Function for search button, set's the users input for querying in the database
     setQuery(inputValue);
   };
 
+  const handleReserveBook = (bookId) => { // Function to open reservation form
+    setSelectedBookId(bookId);
+    setShowReservationForm(true);
+  };
+
+  const handleCloseReservationForm = () => { // Function to close reservation form
+    setShowReservationForm(false);
+    setSelectedBookId(null);
+  };
 
   const addToWishlist = async (bookID) => { // Function that will add the book's ID to the wishlist database once the user clicks on "Wishlist Book"
     const token = localStorage.getItem("token");
@@ -143,39 +155,61 @@ function BookSearch() {
         </div>
       </div>
 
-<div id="searchContent">
-  {bookLibrary && bookLibrary.map(book => //
-    book.title.toLowerCase().includes(query.toLowerCase()) ? ( // .map goes through the array of JSON objects and filters the books shown to display only books that contain data stated in query
-      <div className='bookContainer' key={book.id}>
-        <div className='bookInfo'>
-          <h3>Title: {book.title}</h3>
-          <p>Author: {book.author}</p>
-          <p>ISBN: {book.isbn}</p>
-        </div>
-        <div className='bookOptions'>
-          {(()=>{ // Logical condition to check if the user had wishlisted the book in order to prevent repeated wishlists on the same book.
-            const alreadyWishlisted = wishlists.find(wishListObject => wishListObject.book_id === book.id);
-            if(!alreadyWishlisted){
-              return(
-                <button onClick={()=>addToWishlist(book.id)}>
-                  Wishlist Book
+      <div id="searchContent">
+        {bookLibrary && bookLibrary.map(book => //
+          book.title.toLowerCase().includes(query.toLowerCase()) ? ( // .map goes through the array of JSON objects and filters the books shown to display only books that contain data stated in query
+            <div className='bookContainer' key={book.id}>
+              <div className='bookInfo'>
+                <h3>Title: {book.title}</h3>
+                <p>Author: {book.author}</p>
+                <p>ISBN: {book.isbn}</p>
+              </div>
+              <div className='bookOptions'>
+                {/* Reserve Book Button */}
+                <button 
+                  className="btn btn-primary reserve-btn"
+                  onClick={() => handleReserveBook(book.id)}
+                >
+                  Reserve Book
                 </button>
-              )
-            }
-            else{
-              return(
-                <button onClick={()=>removeFromWishList((alreadyWishlisted.book_id))}>
-                  Remove Book from Wishlist
-                </button>
-              )
-            }
-          })()}
-        </div>
+                
+                {/* Wishlist Button */}
+                {(()=>{ // Logical condition to check if the user had wishlisted the book in order to prevent repeated wishlists on the same book.
+                  const alreadyWishlisted = wishlists.find(wishListObject => wishListObject.book_id === book.id);
+                  if(!alreadyWishlisted){
+                    return(
+                      <button 
+                        className="btn btn-outline wishlist-btn"
+                        onClick={()=>addToWishlist(book.id)}
+                      >
+                        Wishlist Book
+                      </button>
+                    )
+                  }
+                  else{
+                    return(
+                      <button 
+                        className="btn btn-danger wishlist-btn"
+                        onClick={()=>removeFromWishList((alreadyWishlisted.book_id))}
+                      >
+                        Remove from Wishlist
+                      </button>
+                    )
+                  }
+                })()}
+              </div>
+            </div>
+          ) : null
+        )}
       </div>
-    ) : null
-  )}
-</div>
 
+      {/* Reservation Form Modal */}
+      {showReservationForm && (
+        <ReservationForm 
+          bookId={selectedBookId}
+          onClose={handleCloseReservationForm}
+        />
+      )}
     </>
   );
 }
