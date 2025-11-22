@@ -1,0 +1,26 @@
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+td, th {
+  border: 1px solid #dddddd;
+  text-align: left;
+  padding: 8px;
+}
+.loanButtons{
+    width: 150px;
+    height: 25px;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+.loanContainer {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.space{
+    min-width: 100%;
+    min-height: 50px;
+}

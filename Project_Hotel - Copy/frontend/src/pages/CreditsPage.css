@@ -1,0 +1,35 @@
+.creditsUnorderedList {
+  list-style-position: inside;  
+            
+  padding-left: 0;               
+}
+.creditsTitle{
+    padding: 1rem;
+    text-align: center;
+    width: 100%;
+    padding-bottom: 0px;
+}
+.creditsContainer{
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+    flex-wrap: wrap;
+}
+
+.creditsPersonalContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 360px;
+    padding: 1rem;
+    padding-top: 3rem;
+    background-color: #f7f7f7;               
+    border-radius: 1rem;
+    box-shadow: 0 0 20px rgba(56, 56, 56, 0.3);
+    margin: 15px;
+}
+.creditsPersonalContainer img{
+    width: 250px;
+    height: 250px;
+    object-fit: contain;
+}
