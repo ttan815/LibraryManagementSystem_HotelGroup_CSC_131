@@ -18,6 +18,12 @@ body {
   flex-direction: column;
 }
 
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Button Styles */
 .btn {
   display: inline-block;
@@ -84,4 +90,9 @@ body {
 
 .btn-success:hover {
   background: #218838;
+}
+
+/* Ensure page content takes full available space */
+.page-content {
+  flex: 1;
 }

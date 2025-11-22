@@ -1,6 +1,6 @@
 import React from 'react';
 import BookSearch from '../components/BookSearch';
-import './BooksPage.css';
+import './style.css';
 
 const BooksPage = () => {
   return (

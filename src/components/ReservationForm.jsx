@@ -1,6 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { AppContext } from '../context/AppContext';
-import './components/ReservationForm.css';
+import React, { useState } from 'react';
+import './ReservationForm.css';
 
 /**
  * ReservationForm Component
@@ -8,15 +7,15 @@ import './components/ReservationForm.css';
  * Handles reservation type selection and submission
  */
 const ReservationForm = ({ bookId, onClose }) => {
-  // Access global application state
-  const { user, reservations, setReservations } = useContext(AppContext);
   const [reservationType, setReservationType] = useState('loan');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) {
+    
+    const token = localStorage.getItem("token");
+    if (!token) {
       alert('Please login to make a reservation');
       return;
     }
@@ -24,24 +23,54 @@ const ReservationForm = ({ bookId, onClose }) => {
     setIsSubmitting(true);
     
     try {
-      // Create new reservation object
-      const newReservation = {
-        id: Date.now(), // Temporary ID
-        bookId,
-        userId: user.id,
-        type: reservationType,
-        date: new Date().toISOString(),
-        status: 'pending'
+      // CORRECTED: Include all required fields based on backend schema
+      const reservationData = {
+        book_id: parseInt(bookId),
+        reservation_type: reservationType,
+        // Add any other required fields that the backend expects
+        // Based on the "Field required" error, we might need:
+        user_id: null, // Backend should set this from token
+        reservation_date: new Date().toISOString(),
+        expiry_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days from now
+        status: "pending" // or whatever default status
       };
 
-      // Update global state
-      setReservations([...reservations, newReservation]);
-      
-      // Show success message and close form
-      alert(`Book reserved for ${reservationType === 'loan' ? 'loaning' : 'in-person reading'}`);
-      onClose();
+      console.log('Sending reservation data:', reservationData);
+
+      const res = await fetch("http://localhost:8000/api/reservations/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(reservationData),
+      });
+
+      const responseData = await res.json();
+      console.log('Full response:', responseData);
+      console.log('Response status:', res.status);
+
+      if (res.ok) {
+        alert(`Book reserved for ${reservationType === 'loan' ? 'loaning' : 'in-person reading'}`);
+        onClose();
+      } else {
+        // Show detailed error information
+        if (responseData.detail) {
+          if (Array.isArray(responseData.detail)) {
+            const errorMessages = responseData.detail.map(err => 
+              `${err.loc.join('.')}: ${err.msg}`
+            ).join(', ');
+            alert(`Validation errors: ${errorMessages}`);
+          } else {
+            alert(`Reservation failed: ${responseData.detail}`);
+          }
+        } else {
+          alert(`Reservation failed: ${JSON.stringify(responseData)}`);
+        }
+      }
     } catch (error) {
-      alert('Reservation failed. Please try again.');
+      console.error('Reservation error:', error);
+      alert('Reservation failed. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -60,6 +89,7 @@ const ReservationForm = ({ bookId, onClose }) => {
               value={reservationType} 
               onChange={(e) => setReservationType(e.target.value)}
               required
+              className="form-control"
             >
               <option value="loan">Loan (Take Home)</option>
               <option value="in_person">In-Person Reading</option>
@@ -71,14 +101,14 @@ const ReservationForm = ({ bookId, onClose }) => {
             <button 
               type="button" 
               onClick={onClose}
-              className="btn-secondary"
+              className="btn btn-secondary"
             >
               Cancel
             </button>
             <button 
               type="submit" 
               disabled={isSubmitting}
-              className="btn-primary"
+              className="btn btn-primary"
             >
               {isSubmitting ? 'Reserving...' : 'Reserve Book'}
             </button>

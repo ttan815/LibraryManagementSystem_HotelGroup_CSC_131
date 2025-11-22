@@ -1,27 +1,29 @@
 import React, { useContext } from 'react';
 import { AppContext } from '../context/AppContext';
-import { AuthContext} from '../context/AuthContext';
+import { AuthContext } from '../context/AuthContext';
 import BasePage from './BasePage';
-import './HomePage.css';
+import './style.css';
 
-/**
- * HomePage Component - Thomas
- * Landing page that introduces the library management system
- * Shows featured books and quick actions
- */
 const HomePage = () => {
-  const { user, books } = useContext(AppContext);
+  const { books } = useContext(AppContext);
+  const { user } = useContext(AuthContext);
 
-  // Get featured books (first 3 available books)
-  const featuredBooks = books
-    .filter(book => book.available)
-    .slice(0, 3);
-
-  // Simple navigation
+  // Use custom event to communicate with App.js navigation
   const navigateTo = (page) => {
-    window.location.hash = page;
-    window.location.reload();
+    console.log(`Navigating to: ${page}`);
+    
+    // Dispatch a custom event that App.js is listening for
+    const navigationEvent = new CustomEvent('appNavigation', {
+      detail: { page: page }
+    });
+    window.dispatchEvent(navigationEvent);
   };
+
+  // Book data calculations
+  const featuredBooks = books.filter(book => book.available_copies > 0).slice(0, 3);
+  const totalBooks = books.length;
+  const availableBooks = books.filter(book => book.available_copies > 0).length;
+  const loanedBooks = books.filter(book => book.available_copies === 0).length;
 
   return (
     <BasePage className="home-page">
@@ -53,9 +55,14 @@ const HomePage = () => {
                 <button onClick={() => navigateTo('books')} className="btn btn-primary">
                   Browse Books
                 </button>
-                <button onClick={() => navigateTo('loans')} className="btn btn-secondary">
-                  My Loans
+                <button onClick={() => navigateTo('profile')} className="btn btn-secondary">
+                  My Profile
                 </button>
+                {user.role === 'admin' && (
+                  <button onClick={() => navigateTo('admin')} className="btn btn-outline">
+                    Admin Dashboard
+                  </button>
+                )}
               </>
             )}
           </div>
@@ -78,19 +85,37 @@ const HomePage = () => {
           <div className="feature-card">
             <div className="feature-icon">🔍</div>
             <h3>Easy Search</h3>
-            <p>Find books by title, author, or ISBN with our powerful search</p>
+            <p>Find books by title, author, or ISBN with our powerful search functionality</p>
           </div>
           
           <div className="feature-card">
             <div className="feature-icon">⏰</div>
             <h3>Smart Reminders</h3>
-            <p>Get automatic notifications for due dates and reservations</p>
+            <p>Get automatic notifications for due dates and reservation availability</p>
           </div>
           
           <div className="feature-card">
             <div className="feature-icon">📱</div>
             <h3>Digital Management</h3>
-            <p>Manage all your library activities from one dashboard</p>
+            <p>Manage all your library activities from one convenient dashboard</p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">❤️</div>
+            <h3>Wishlist</h3>
+            <p>Save books you're interested in and get notified when they're available</p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">⚡</div>
+            <h3>Fast Reservations</h3>
+            <p>Quickly reserve books for in-person reading or take-home loans</p>
+          </div>
+
+          <div className="feature-card">
+            <div className="feature-icon">🛡️</div>
+            <h3>Secure & Reliable</h3>
+            <p>Your data is protected with modern security practices</p>
           </div>
         </div>
       </section>
@@ -102,9 +127,19 @@ const HomePage = () => {
           <div className="featured-books-grid">
             {featuredBooks.map(book => (
               <div key={book.id} className="featured-book-card">
-                <h4>{book.title}</h4>
-                <p className="book-author">by {book.author}</p>
-                <div className="book-status available">Available</div>
+                <div className="book-cover">
+                  <div className="book-cover-placeholder">
+                    {book.title.charAt(0).toUpperCase()}
+                  </div>
+                </div>
+                <div className="book-info">
+                  <h4>{book.title}</h4>
+                  <p className="book-author">by {book.author}</p>
+                  <p className="book-isbn">ISBN: {book.isbn}</p>
+                  <div className="book-status available">
+                    {book.available_copies} available
+                  </div>
+                </div>
                 <button onClick={() => navigateTo('books')} className="btn btn-small">
                   View Details
                 </button>
@@ -112,7 +147,14 @@ const HomePage = () => {
             ))}
           </div>
         ) : (
-          <p className="no-books-message">No books available at the moment.</p>
+          <div className="no-books-message">
+            <p>No books available at the moment. Check back later!</p>
+            {user?.role === 'admin' && (
+              <button onClick={() => navigateTo('admin')} className="btn btn-primary">
+                Add Books
+              </button>
+            )}
+          </div>
         )}
         
         <div className="view-all-books">
@@ -126,20 +168,88 @@ const HomePage = () => {
       <section className="stats-section">
         <div className="stats-container">
           <div className="stat-item">
-            <div className="stat-number">{books.length}</div>
+            <div className="stat-number">{totalBooks}</div>
             <div className="stat-label">Total Books</div>
           </div>
           <div className="stat-item">
-            <div className="stat-number">
-              {books.filter(book => book.available).length}
-            </div>
+            <div className="stat-number">{availableBooks}</div>
             <div className="stat-label">Available Now</div>
           </div>
           <div className="stat-item">
-            <div className="stat-number">
-              {books.filter(book => !book.available).length}
-            </div>
+            <div className="stat-number">{loanedBooks}</div>
             <div className="stat-label">Currently Loaned</div>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick Actions Section */}
+      <section className="quick-actions-section">
+        <h2>Quick Actions</h2>
+        <div className="actions-grid">
+          <div className="action-card" onClick={() => navigateTo('books')}>
+            <div className="action-icon">📚</div>
+            <h3>Browse Catalog</h3>
+            <p>Explore our complete collection of books</p>
+          </div>
+          
+          {!user ? (
+            <div className="action-card" onClick={() => navigateTo('auth')}>
+              <div className="action-icon">👤</div>
+              <h3>Create Account</h3>
+              <p>Sign up to start borrowing books</p>
+            </div>
+          ) : (
+            <div className="action-card" onClick={() => navigateTo('profile')}>
+              <div className="action-icon">👤</div>
+              <h3>My Account</h3>
+              <p>Manage your profile and preferences</p>
+            </div>
+          )}
+          
+          <div className="action-card" onClick={() => navigateTo('contact')}>
+            <div className="action-icon">💬</div>
+            <h3>Get Help</h3>
+            <p>Contact our support team</p>
+          </div>
+
+          {user?.role === 'admin' && (
+            <div className="action-card" onClick={() => navigateTo('admin')}>
+              <div className="action-icon">⚙️</div>
+              <h3>Admin Panel</h3>
+              <p>Manage library operations</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="cta-section">
+        <div className="cta-content">
+          <h2>Ready to Get Started?</h2>
+          <p>
+            Join thousands of satisfied users who have transformed their reading experience 
+            with LibraryMS. Start exploring our collection today!
+          </p>
+          <div className="cta-buttons">
+            {!user ? (
+              <>
+                <button onClick={() => navigateTo('auth')} className="btn btn-primary btn-large">
+                  Create Your Account
+                </button>
+                <button onClick={() => navigateTo('books')} className="btn btn-secondary btn-large">
+                  Browse as Guest
+                </button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => navigateTo('books')} className="btn btn-primary btn-large">
+                  Discover New Books
+                </button>
+                <button onClick={() => navigateTo('profile')} className="btn btn-secondary btn-large">
+                  View My Profile
+                </button>
+              </>
+            )}
           </div>
         </div>
       </section>

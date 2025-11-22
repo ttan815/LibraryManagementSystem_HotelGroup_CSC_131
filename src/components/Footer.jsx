@@ -1,9 +1,9 @@
 import React from 'react';
 import '../components/Footer.css';
 import { FaGithub, FaLinkedin, FaFacebook, FaInstagram } from 'react-icons/fa';
-import { FaXTwitter } from 'react-icons/fa6'; // Twitter → X logo
+import { FaXTwitter } from 'react-icons/fa6';
 
-const Footer = () => {
+const Footer = ({ onNavigate }) => {
   const socialPlatforms = [
     { name: 'GitHub', url: 'https://github.com', icon: <FaGithub />, color: '#333' },
     { name: 'LinkedIn', url: 'https://linkedin.com', icon: <FaLinkedin />, color: '#0077b5' },
@@ -14,6 +14,12 @@ const Footer = () => {
 
   const handleSocialClick = (url) => {
     window.open(url, '_blank', 'noopener noreferrer');
+  };
+
+  const handleNavigation = (path) => {
+    if (onNavigate) {
+      onNavigate(path);
+    }
   };
 
   return (
@@ -28,7 +34,7 @@ const Footer = () => {
               onClick={() => handleSocialClick(platform.url)}
               aria-label={`Visit our ${platform.name}`}
               title={`Follow us on ${platform.name}`}
-              style={{ '--hover-color': platform.color }} // dynamic hover color
+              style={{ '--hover-color': platform.color }}
             >
               {platform.icon}
             </button>
@@ -39,10 +45,36 @@ const Footer = () => {
         <div className="footer-info">
           <p>&copy; 2024 Library Management System. Team Hotel.</p>
           <div className="footer-links">
-            <a href="/about">About</a>
-            <a href="/contact">Contact</a>
-            <a href="/privacy">Privacy</a>
-            <a href="/terms">Terms</a>
+            <button 
+              className="footer-link-btn"
+              onClick={() => handleNavigation('about')}
+            >
+              About
+            </button>
+            <button 
+              className="footer-link-btn"
+              onClick={() => handleNavigation('contact')}
+            >
+              Contact
+            </button>
+            <button 
+              className="footer-link-btn"
+              onClick={() => handleNavigation('credits')}
+            >
+              Credits
+            </button>
+            <button 
+              className="footer-link-btn"
+              onClick={() => handleNavigation('privacy')}
+            >
+              Privacy
+            </button>
+            <button 
+              className="footer-link-btn"
+              onClick={() => handleNavigation('terms')}
+            >
+              Terms
+            </button>
           </div>
         </div>
       </div>

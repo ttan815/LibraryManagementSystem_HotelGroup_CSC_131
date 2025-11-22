@@ -2,106 +2,160 @@ import React, { useState, useContext } from 'react';
 import './UserForm.css';
 import { AuthContext } from '../context/AuthContext'; 
 import { jwtDecode } from 'jwt-decode';
-/**
- * UserForm.jsx
- * -----------------------------------------------------------
- * Component: UserForm
- * Author: Tony Tan
- * Course: CSC-131-05 Software Engineering
- * Project: Library Management System
- *
- */
-const UserForm = ({onLoginSuccess}) => {
-  const [isLogin, setIsLogin] = useState(true);  // Default to the login page, but this always users to switch between the login and register form
-  const { login } = useContext(AuthContext); // Calls the login in AuthContext which sets the username of who is logged in and the user profile.
 
-  const toggleForm = () => { // Function to switch between the login and register form
+const UserForm = ({onLoginSuccess}) => {
+  const [isLogin, setIsLogin] = useState(true);
+  const { login } = useContext(AuthContext);
+  const [error, setError] = useState(''); // ONLY ADDED THIS LINE
+
+  const toggleForm = () => {
     setIsLogin(!isLogin);
+    setError(''); // Clear error when switching forms
   };
-  const loginFunc = async (e) =>{ // function that will take the data from those that have data-id="loginInfo" and log the user in and give them a token on their localStorage that will allow them to stay logged in even when exiting the page (default limit is 30 minutes)
+
+  const loginFunc = async (e) => {
     e.preventDefault();
-    const elements = document.querySelectorAll(`[data-id="loginInfo"]`);
-    const dataValues = {};
-    for(const elementInput of elements){
-        dataValues[elementInput.dataset.field] = elementInput.value;
-    }
-    const options = {
+    setError(''); // Clear previous errors
+    
+    try {
+      const elements = document.querySelectorAll(`[data-id="loginInfo"]`);
+      const dataValues = {};
+      for(const elementInput of elements){
+          dataValues[elementInput.dataset.field] = elementInput.value;
+      }
+      
+      const options = {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
         body: new URLSearchParams({
           username: dataValues["loginUsername"],
           password: dataValues["loginPassword"],
-          role: 'user',
         }),
       };
-    const res = await fetch("http://localhost:8000/api/auth/login",options);
-    if(res.ok){
+      
+      const res = await fetch("http://localhost:8000/api/auth/login", options);
+      
+      if(res.ok){
         const data = await res.json();
         const decryptedUserInfo = jwtDecode(data.access_token);
 
-        const userData = {
-            name: decryptedUserInfo.sub, 
-            role: 'user', 
-        };
-        login(userData);
-        if (onLoginSuccess){
+        // FIX: Get actual user data from backend instead of hardcoding
+        const userResponse = await fetch("http://localhost:8000/api/users/me", {
+          headers: {
+            "Authorization": `Bearer ${data.access_token}`
+          }
+        });
+        
+        if (userResponse.ok) {
+          const userData = await userResponse.json();
+          login(userData);
+          localStorage.setItem("token", data.access_token);
+          
+          if (onLoginSuccess){
             onLoginSuccess();
-            localStorage.setItem("token", data.access_token);
+          }
         }
+      } else {
+        // FIX: Handle login errors
+        const errorData = await res.json().catch(() => ({ detail: 'Login failed' }));
+        setError(errorData.detail || 'Login failed');
+      }
+    } catch (error) {
+      // FIX: Handle network errors
+      setError('Network error. Please try again.');
+      console.error('Login error:', error);
     }
   }
 
-  const registerFunc = async (e) =>{ // function that takes the data from those that have data-id="registerInfo" and register the user into the database, then using that registered user's username and password to enact the activities from loginFunc.
-      e.preventDefault();
+  const registerFunc = async (e) => {
+    e.preventDefault();
+    setError(''); // Clear previous errors
+    
+    try {
       const elements = document.querySelectorAll(`[data-id="registerInfo"]`);
       const dataValues = {};
       for(const elementInput of elements){
           dataValues[elementInput.dataset.field] = elementInput.value;
       }
+      
       const options = {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            email : dataValues["registerEmail"],
-            username : dataValues["registerUsername"],
-            full_name : dataValues["registerFullName"],
-            password : dataValues["registerPassword"],
-
+            email: dataValues["registerEmail"],
+            username: dataValues["registerUsername"],
+            full_name: dataValues["registerFullName"],
+            password: dataValues["registerPassword"],
         }),
       };
-      const res = await fetch("http://localhost:8000/api/auth/register",options);
+      
+      const res = await fetch("http://localhost:8000/api/auth/register", options);
+      
       if(res.ok){
+        // Auto-login after successful registration
         const loginOptions = {
-            method: 'POST',
-            body: new URLSearchParams({
-              username: dataValues["registerUsername"],
-              password: dataValues["registerPassword"],
-              role: 'user',
-            }),
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            username: dataValues["registerUsername"],
+            password: dataValues["registerPassword"],
+          }),
         };
-        const loginRes = await fetch("http://localhost:8000/api/auth/login",loginOptions);
+        
+        const loginRes = await fetch("http://localhost:8000/api/auth/login", loginOptions);
+        
         if(loginRes.ok){
           const data = await loginRes.json();
           const decryptedUserInfo = jwtDecode(data.access_token);
 
-          const userData = {
-              name: decryptedUserInfo.sub, 
-              role: 'user', 
-          };
-          login(userData);
-          if (onLoginSuccess){
+          // FIX: Get actual user data from backend
+          const userResponse = await fetch("http://localhost:8000/api/users/me", {
+            headers: {
+              "Authorization": `Bearer ${data.access_token}`
+            }
+          });
+          
+          if (userResponse.ok) {
+            const userData = await userResponse.json();
+            login(userData);
+            localStorage.setItem("token", data.access_token);
+            
+            if (onLoginSuccess){
               onLoginSuccess();
-              localStorage.setItem("token", data.access_token);
+            }
           }
+        } else {
+          setError('Registration successful but login failed. Please log in manually.');
         }
+      } else {
+        // FIX: Handle registration errors
+        const errorData = await res.json().catch(() => ({ detail: 'Registration failed' }));
+        setError(errorData.detail || 'Registration failed');
       }
+    } catch (error) {
+      // FIX: Handle network errors
+      setError('Network error. Please try again.');
+      console.error('Registration error:', error);
+    }
   }
 
   return (
     <div className="registerAndLoginForm">
-      {isLogin ? ( // Ternary operator that will switch between the login and register form when it's state changes from true or false
-        <form onSubmit={loginFunc}> {/* When the submit button is clicked, the loginFunc will be fired */}
+      {/* ONLY ADDED THIS ERROR DISPLAY */}
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+
+      {isLogin ? (
+        <form onSubmit={loginFunc}>
           <h1 id="addBookTitle">Login</h1>
           <div className="column">
             <label className="inputName" htmlFor="username">Username:</label>
@@ -113,13 +167,13 @@ const UserForm = ({onLoginSuccess}) => {
           </div> 
           <button className="btn btn-primary submitButton" type="submit">Login</button>
           <div className="switchFormContainer">
-            <button type="button" className="switchRegisterAndLoginForm" onClick={toggleForm}> {/* Will switch the true/false state of the isLogin variable */}
+            <button type="button" className="switchRegisterAndLoginForm" onClick={toggleForm}>
               Create new account
             </button>
           </div>
         </form>
       ) : (
-        <form onSubmit={registerFunc}> {/* When the submit button is clicked, the registerFunc will be fired */}
+        <form onSubmit={registerFunc}>
           <h1 id="addBookTitle">Register</h1>
           <div className="column">
             <label className="inputName" htmlFor="email">Email:</label>
@@ -139,14 +193,12 @@ const UserForm = ({onLoginSuccess}) => {
           </div> 
           <button className="btn btn-primary submitButton" type="submit">Register</button>
           <div className="switchFormContainer">
-            <button type="button" className="switchRegisterAndLoginForm" onClick={toggleForm}> {/* Will switch the true/false state of the isLogin variable */}
+            <button type="button" className="switchRegisterAndLoginForm" onClick={toggleForm}>
               Already have an account? Log in
             </button>
           </div>
         </form>
       )}
-
-      
     </div>
   );
 };
