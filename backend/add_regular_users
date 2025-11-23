@@ -1,0 +1,95 @@
+# add_regular_users.py
+import sys
+sys.path.append('.')
+from database import SessionLocal
+from models import User, UserRole
+from auth import get_password_hash
+from datetime import datetime
+
+def add_regular_users():
+    db = SessionLocal()
+    try:
+        regular_users = [
+            {
+                "email": "john.doe@email.com",
+                "username": "johndoe",
+                "full_name": "John Doe",
+                "password": "password123",
+                "role": UserRole.USER
+            },
+            {
+                "email": "sarah.smith@email.com", 
+                "username": "sarahsmith",
+                "full_name": "Sarah Smith",
+                "password": "password123",
+                "role": UserRole.USER
+            },
+            {
+                "email": "mike.johnson@email.com",
+                "username": "mikejohnson",
+                "full_name": "Mike Johnson",
+                "password": "password123", 
+                "role": UserRole.USER
+            },
+            {
+                "email": "emily.wilson@email.com",
+                "username": "emilywilson",
+                "full_name": "Emily Wilson",
+                "password": "password123",
+                "role": UserRole.USER
+            },
+            {
+                "email": "david.brown@email.com",
+                "username": "davidbrown",
+                "full_name": "David Brown",
+                "password": "password123",
+                "role": UserRole.USER
+            }
+        ]
+
+        added_count = 0
+        for user_data in regular_users:
+            # Check if user already exists by username or email
+            existing_user = db.query(User).filter(
+                (User.username == user_data["username"]) | 
+                (User.email == user_data["email"])
+            ).first()
+            
+            if not existing_user:
+                user = User(
+                    email=user_data["email"],
+                    username=user_data["username"],
+                    full_name=user_data["full_name"],
+                    hashed_password=get_password_hash(user_data["password"]),
+                    role=user_data["role"],
+                    is_active=True,
+                    membership_dues=0.0,
+                    created_at=datetime.utcnow()
+                )
+                db.add(user)
+                added_count += 1
+                print(f"✅ Added user: {user_data['username']} ({user_data['full_name']})")
+            else:
+                print(f"⚠️  User already exists: {user_data['username']}")
+
+        db.commit()
+        print(f"\n🎉 Successfully added {added_count} new regular users!")
+        print("\n📋 User Credentials:")
+        print("=" * 40)
+        for user_data in regular_users:
+            print(f"Username: {user_data['username']}")
+            print(f"Password: {user_data['password']}") 
+            print(f"Email: {user_data['email']}")
+            print(f"Name: {user_data['full_name']}")
+            print("-" * 20)
+
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        db.rollback()
+        import traceback
+        traceback.print_exc()
+    finally:
+        db.close()
+
+if __name__ == "__main__":
+    add_regular_users()
