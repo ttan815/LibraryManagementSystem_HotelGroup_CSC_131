@@ -80,7 +80,7 @@ function BookForm() {
         }
     }
   }
-  const deleteBook = async (e) =>{ // Functino that will delete the book
+  const deleteBook = async (e) =>{ // Function that will delete the book
     e.preventDefault();
     const token = localStorage.getItem("token");
     const res = await fetch("http://localhost:8000/api/books/")
