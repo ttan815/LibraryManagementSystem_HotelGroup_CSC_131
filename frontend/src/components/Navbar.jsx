@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import Notifications from '../components/Notifications';
-import '../pages/style.css'
+import '../components/Navbar.css';
 
 /**
  * Navigation Bar Component
@@ -34,14 +34,30 @@ const Navbar = ({ onNavigate }) => {
       {/* Main navigation links */}
       <ul className="nav-links">
         <li><a href="#home" onClick={(e) => { e.preventDefault(); navigateTo('home'); }}>Home</a></li>
-        <li><a href="#books" onClick={(e) => { e.preventDefault(); navigateTo('books'); }}>Books</a></li>
-        
         {/* Conditional links based on user authentication */}
         {user ? (
           <>
-            <li><a href="#profile" onClick={(e) => { e.preventDefault(); navigateTo('profile'); }}>Profile</a></li>
+          {user.role !== 'admin' && user.membership_dues > 0.0 &&(
+            <>
+              <li><a href="#home" onClick={(e) => { e.preventDefault(); navigateTo('home'); }}>Home</a></li>
+              <li><a href="#books" onClick={(e) => { e.preventDefault(); navigateTo('books'); }}>Books</a></li>
+              <li><a href="#loans" onClick={(e) => { e.preventDefault(); navigateTo('loans'); }}>My Loans</a></li>
+              <li><a href="#profile" onClick={(e) => { e.preventDefault(); navigateTo('profile'); }}>Profile</a></li>
+            </>
+          )}
+          {user.role !== 'admin' && user.membership_dues === 0.0 &&(
+            <>
+              <li><a href="#profile" onClick={(e) => { e.preventDefault(); navigateTo('membership'); }}>Membership</a></li>
+            </>
+          )}
             {user.role === 'admin' && (
-              <li><a href="#admin" onClick={(e) => { e.preventDefault(); navigateTo('admin'); }}>Admin</a></li>
+              <>
+                  <li><a href="#home" onClick={(e) => { e.preventDefault(); navigateTo('home'); }}>Home</a></li>
+                  <li><a href="#books" onClick={(e) => { e.preventDefault(); navigateTo('books'); }}>Books</a></li>
+                  <li><a href="#loans" onClick={(e) => { e.preventDefault(); navigateTo('loans'); }}>My Loans</a></li>
+                  <li><a href="#profile" onClick={(e) => { e.preventDefault(); navigateTo('profile'); }}>Profile</a></li>
+                  <li><a href="#admin" onClick={(e) => { e.preventDefault(); navigateTo('admin'); }}>Admin</a></li>
+              </>            
             )}
           </>
         ) : (
