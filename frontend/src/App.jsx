@@ -14,6 +14,7 @@ import Footer from './components/Footer';
 import CreditsPage from './pages/CreditsPage.jsx';
 import ContactPage from './pages/ContactsPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
+import MembershipPage from './pages/MembershipPage.jsx'
 import './App.css';
 
 /**
@@ -52,6 +53,8 @@ const App = () => {
         return <AdminPage />;
       case 'profile':
         return <UserPage />;
+      case 'membership':
+        return <MembershipPage />;
       case 'books':
         return <BooksPage />;
       case 'booksForm':
