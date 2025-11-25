@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 const MembershipPage = ()=>{
     const [user,setUser] = useState('')
     useEffect(()=>{
@@ -50,8 +49,12 @@ const MembershipPage = ()=>{
     
     return(
         <>
+<div
+  style={{
+    display: "flex", justifyContent: "center", flexDirection: "column", textAlign: "center", width: "100%",padding: "50px"}}>
             <h1>Enroll in LibraryMS Membership (Free & for life!)</h1>
-            <button onClick={updateMembership}>Enroll</button>
+            <button className='btn primary' onClick={updateMembership}>Enroll</button>
+        </div>
         </>
     )
 }
