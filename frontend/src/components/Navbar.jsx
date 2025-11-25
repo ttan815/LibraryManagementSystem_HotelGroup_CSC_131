@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import Notifications from '../components/Notifications';
-import '../components/Navbar.css';
+import '../pages/style.css'
 
 /**
  * Navigation Bar Component
@@ -82,3 +82,4 @@ const Navbar = ({ onNavigate }) => {
 };
 
 export default Navbar;
+
