@@ -39,7 +39,6 @@ const Navbar = ({ onNavigate }) => {
           <>
           {user.role !== 'admin' && user.membership_dues > 0.0 &&(
             <>
-              <li><a href="#home" onClick={(e) => { e.preventDefault(); navigateTo('home'); }}>Home</a></li>
               <li><a href="#books" onClick={(e) => { e.preventDefault(); navigateTo('books'); }}>Books</a></li>
               <li><a href="#loans" onClick={(e) => { e.preventDefault(); navigateTo('loans'); }}>My Loans</a></li>
               <li><a href="#profile" onClick={(e) => { e.preventDefault(); navigateTo('profile'); }}>Profile</a></li>
@@ -52,7 +51,6 @@ const Navbar = ({ onNavigate }) => {
           )}
             {user.role === 'admin' && (
               <>
-                  <li><a href="#home" onClick={(e) => { e.preventDefault(); navigateTo('home'); }}>Home</a></li>
                   <li><a href="#books" onClick={(e) => { e.preventDefault(); navigateTo('books'); }}>Books</a></li>
                   <li><a href="#loans" onClick={(e) => { e.preventDefault(); navigateTo('loans'); }}>My Loans</a></li>
                   <li><a href="#profile" onClick={(e) => { e.preventDefault(); navigateTo('profile'); }}>Profile</a></li>
