@@ -15,7 +15,7 @@ import CreditsPage from './pages/CreditsPage.jsx';
 import ContactPage from './pages/ContactsPage.jsx';
 import AboutPage from './pages/AboutPage.jsx';
 import MembershipPage from './pages/MembershipPage.jsx'
-import './App.css';
+import '../pages/style.css'
 
 /**
  * Main App Component
