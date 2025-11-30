@@ -5,6 +5,55 @@ const CreditsPage = () => {
         <>
             <h1 className="creditsTitle">Hotel Group: Library Management System Credits</h1>
             <div className="creditsContainer">
+
+                <div className="creditsPersonalContainer">
+                    <img src=""></img>
+                    <h1>Simran Sandhu</h1>
+                    <h2>Role: Project Manager</h2>
+                    <h2>Accomplishments:</h2>
+                    <ul className="creditsUnorderedList">
+                        <li>
+                            Managed meetings, weekly reports, created Jira ticket board, scheduled and established consistent team communication, documentation compilation
+                        </li>
+                        <li>
+                            Highlighted priorities, deadline feasability, evaluated team progress, acces blockers, asked for team feedback
+                        </li>
+                        <li>
+                            Participated in Software specification and development, validation, and evolution
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="creditsPersonalContainer">
+                    <img src=""></img>
+                    <h1>Thomas Williams</h1>
+                    <h2>Role: Quality Control</h2>
+                    <h2>Accomplishments:</h2>
+                    <ul className="creditsUnorderedList">
+                        <li>
+                            Created a framework for our project report by organoziing information about our approach to the software process, the requireemnts we had identified, and the tools, IDEs, and other resources necessary for developing and executing our software product
+                        </li>
+                        <li>
+                            Participated in Software specification and development, validation, and evolution
+                        </li>
+                    </ul>
+                </div>
+
+                <div className="creditsPersonalContainer">
+                    <img src="src/images/credits_Wyatt.jpg"></img>
+                    <h1>Wyatt Walker</h1>
+                    <h2>Role: Quality Control</h2>
+                    <h2>Accomplishments:</h2>
+                    <ul className="creditsUnorderedList">
+                        <li>
+                            Developed test cases for unit/component, system, and acceptance testing.
+                        </li>
+                        <li>
+                            Ensured that the software product met all the requirements.
+                        </li>
+                    </ul>
+                </div>
+                
                 <div className="creditsPersonalContainer">
                     <img src="src/images/credits_TonyTan.jpg"></img>
                     <h1>Tony Tan</h1>
@@ -64,22 +113,33 @@ const CreditsPage = () => {
                         </li>
                     </ul>
                 </div>
-
+                
                 <div className="creditsPersonalContainer">
-                    <img src="src/images/credits_Wyatt.jpg"></img>
-                    <h1>Wyatt Walker</h1>
+                    <img src=""></img>
+                    <h1>Arnav Surve</h1>
                     <h2>Role: Quality Control</h2>
                     <h2>Accomplishments:</h2>
                     <ul className="creditsUnorderedList">
                         <li>
-                            Developed test cases for unit/component, system, and acceptance testing.
+                            Developed REST API endpoints and database schema, testing CRUD operations, and coordinating backend integrationw ith frontend React components
                         </li>
                         <li>
-                            Ensured that the software product met all the requirements.
+                            Participated in Software specification and development
                         </li>
                     </ul>
                 </div>
-                
+
+                <div className="creditsPersonalContainer">
+                    <img src=""></img>
+                    <h1>Abdul Subhan</h1>
+                    <h2>Role: Designer</h2>
+                    <h2>Accomplishments:</h2>
+                    <ul className="creditsUnorderedList">
+                        <li>
+                            Created the Use-Case and Class Diagrams for the Library Management System
+                        </li>
+                    </ul>
+                </div>
             </div>
         </>
     )

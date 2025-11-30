@@ -5,11 +5,11 @@ import { FaXTwitter } from 'react-icons/fa6';
 
 const Footer = ({ onNavigate }) => {
   const socialPlatforms = [
-    { name: 'GitHub', url: 'https://github.com', icon: <FaGithub />, color: '#333' },
-    { name: 'LinkedIn', url: 'https://linkedin.com', icon: <FaLinkedin />, color: '#0077b5' },
-    { name: 'X', url: 'https://x.com', icon: <FaXTwitter />, color: '#000000' },
+    { name: 'GitHub', url: 'https://github.com/ttan815/LibraryManagementSystem_HotelGroup_CSC_131', icon: <FaGithub />, color: '#333' },
+    { name: 'LinkedIn', url: 'https://www.linkedin.com/in/lms-hotel-group-46948939b/', icon: <FaLinkedin />, color: '#0077b5' },
+    { name: 'X', url: 'https://x.com/LCsc13135400', icon: <FaXTwitter />, color: '#000000' },
     { name: 'Facebook', url: 'https://facebook.com', icon: <FaFacebook />, color: '#1877f2' },
-    { name: 'Instagram', url: 'https://instagram.com', icon: <FaInstagram />, color: '#e1306c' },
+    { name: 'Instagram', url: 'https://www.instagram.com/hotel_lms_131/?igsh=NTc4MTIwNjQ2YQ%3D%3D#', icon: <FaInstagram />, color: '#e1306c' },
   ];
 
   const handleSocialClick = (url) => {
