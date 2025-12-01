@@ -34,7 +34,7 @@ const CreditsPage = () => {
                             Created a framework for our project report by organoziing information about our approach to the software process, the requireemnts we had identified, and the tools, IDEs, and other resources necessary for developing and executing our software product
                         </li>
                         <li>
-                            Made the Algorithm Synopsis
+                            Evaluated and expatiated on elements of system models.
                         </li>
                         <li>
                             Participated in Software specification and development, validation, and evolution
