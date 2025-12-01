@@ -1,28 +1,41 @@
-import React, { useState, useContext } from 'react';
+import React from 'react';
 import './style.css';
+
 const ContactsPage = () => {
 
   return (
     <div className="registerAndLoginForm">
-        {/*  Uses the FormSpree API that will load all the info from the form into an email sent to a Google Groups email that will then distribute that Contact Form info to all memebrs of the Hotel Group */}
-        <form action="https://formspree.io/f/mblqjwkz" method="POST">
+
+          <form
+          action="mailto:librarymanagementsystem_hotelgroup_csc_131@googlegroups.com?subject=Hotel%20Group%20Contact%20Form" method="POST" encType="text/plain">
+
           <h1 id="addBookTitle">Contact Us</h1>
+
           <div className="column">
-            <label className="inputName" htmlFor="name">Name:</label>
-            <input required type="text" className="form-control" name="username" />
+            <label className="inputName">Name:</label>
+            <input required type="text" className="form-control" name="Name" />
           </div> 
+
           <div className="column">
-            <label className="inputName" htmlFor="email">Email:</label>
-            <input required className="form-control" name="email" />
+            <label className="inputName">Email:</label>
+            <input required type="email" className="form-control" name="Email" />
           </div> 
+
           <div className="column">
-            <label className="inputName" htmlFor="phone_number">Phone Number:</label>
-            <input required type="text" className="form-control" name="phone_number" />
+            <label className="inputName">Phone Number:</label>
+            <input required type="text" className="form-control" name="Phone" />
           </div> 
-            <label className="inputName" htmlFor="message">Message:</label>
-            <textarea required className="textAreaContact form-control message-box" name="message" rows="4" placeholder="Message here"></textarea>
-          <button className="btn btn-primary submitButton" type="submit">Submit</button>
+
+          <label className="inputName">Message:</label>
+          <textarea
+            required className="textAreaContact form-control message-box" name="Message" rows="4" placeholder="Message here"></textarea>
+
+          <button className="btn btn-primary submitButton" type="submit">
+            Submit
+          </button>
+
         </form>
+
     </div>
   );
 };
