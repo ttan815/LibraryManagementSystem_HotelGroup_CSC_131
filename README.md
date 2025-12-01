@@ -1,3 +1,4 @@
+** Note: You'll need to have two separate terminals open, one for the frontend and one for the backend.
 To run the front end:
 
 Go and open the front end folder in terminal, then do "npm install", that should load up all the data. Then you can load the website with "npm run dev".
