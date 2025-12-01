@@ -7,7 +7,7 @@ const CreditsPage = () => {
             <div className="creditsContainer">
 
                 <div className="creditsPersonalContainer">
-                    <img src=""></img>
+                    <img src="src/images/credits_Simran.jpg"></img>
                     <h1>Simran Sandhu</h1>
                     <h2>Role: Project Manager</h2>
                     <h2>Accomplishments:</h2>
@@ -82,7 +82,7 @@ const CreditsPage = () => {
                 </div>
                 
                 <div className="creditsPersonalContainer">
-                    <img src="src/images/credits_MichaelSaldana.jpg"></img>
+                    <img src="src/images/credits_Michael.jpg"></img>
                     <h1>Michael Saldana</h1>
                     <h2>Role: Programmer</h2>
                     <h2>Accomplishments:</h2>
@@ -137,6 +137,9 @@ const CreditsPage = () => {
                     <ul className="creditsUnorderedList">
                         <li>
                             Created the Use-Case and Class Diagrams for the Library Management System
+                        </li>
+                        <li>
+                            Made the Algorithmic Design Pseudocode
                         </li>
                     </ul>
                 </div>
