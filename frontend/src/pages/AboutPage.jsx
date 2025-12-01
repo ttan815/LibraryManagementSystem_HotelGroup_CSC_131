@@ -79,7 +79,7 @@ const AboutPage = () => {
       name: 'Thomas Williams',
       role: 'Analyst & UI/UX Designer',
       contribution: 'UI/UX Design, CSS Styling, Component Structure',
-      avatar: 'A',
+      avatar: 'T',
       education: [
         { year: 'Expected 2027', institution: 'CSU, Sacramento', degree: 'B.S. in Computer Science (In Progress)' }
       ],
@@ -89,6 +89,18 @@ const AboutPage = () => {
       workExperience: [
         { year: '2023 - Present', role: 'UI/UX Designer', company: 'Freelance' }
       ]
+    },
+    {
+      name: 'Abdul Subhan',
+      role: 'Designer',
+      contribution: 'UI/UX Design, CSS Styling, Component Structure',
+      avatar: 'A',
+      education: [
+        { year: 'Expected 2027', institution: 'CSU, Sacramento', degree: 'B.S. in Computer Science (In Progress)' }
+      ],
+      professionalSkills: ['Design Thinking', 'Communication', 'User Experience'],
+      technicalSkills: ['Figma', 'CSS', 'React', 'Graphic Design'],
+      awards: [],
     }
   ];
 

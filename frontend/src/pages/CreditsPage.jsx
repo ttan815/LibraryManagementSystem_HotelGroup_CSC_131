@@ -34,6 +34,9 @@ const CreditsPage = () => {
                             Created a framework for our project report by organoziing information about our approach to the software process, the requireemnts we had identified, and the tools, IDEs, and other resources necessary for developing and executing our software product
                         </li>
                         <li>
+                            Made the Algorithm Synopsis
+                        </li>
+                        <li>
                             Participated in Software specification and development, validation, and evolution
                         </li>
                     </ul>
@@ -78,6 +81,9 @@ const CreditsPage = () => {
                         <li>
                             Helped in testing the project, finding issues and bringing it up to the team to get it resolved, adjusting CSS issues and patching small bugs found when doing quality control.
                         </li>
+                        <li>
+                            Participated in Software specification, development. validation, and evolution.
+                        </li>
                     </ul>
                 </div>
                 
@@ -111,6 +117,9 @@ const CreditsPage = () => {
                         <li>
                             Created the auto-refresh system for real-time data synchronization across components
                         </li>
+                        <li>
+                            Participated in Software specification, development. validation, and evolution.
+                        </li>
                     </ul>
                 </div>
                 
@@ -124,7 +133,7 @@ const CreditsPage = () => {
                             Developed REST API endpoints and database schema, testing CRUD operations, and coordinating backend integrationw ith frontend React components
                         </li>
                         <li>
-                            Participated in Software specification and development
+                            Participated in Software specification and development.
                         </li>
                     </ul>
                 </div>
@@ -140,6 +149,9 @@ const CreditsPage = () => {
                         </li>
                         <li>
                             Made the Algorithmic Design Pseudocode
+                        </li>
+                        <li>
+                            Participated in Software specification and development, validation, and evolution.
                         </li>
                     </ul>
                 </div>
